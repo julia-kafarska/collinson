@@ -17,7 +17,7 @@ Day 4 · Size S (~1 h) · Depends on T16 · PRD §11
   - [x] four aliases in one query, rejected by the query limits (T18).
 - [x] Assertions check shape and error codes, not which activity wins, because live weather changes.
 - [x] `bru run --env local` passes: 7 requests, 4 tests, 23 assertions. So does `--env light-cloud`.
-- [ ] The README has the same examples as `curl` commands.
+- [x] The README has the same examples as `curl` commands.
 
 ## Notes
 

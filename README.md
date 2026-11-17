@@ -35,6 +35,15 @@ curl -s https://main-collinson-prod-team.light-cloud.io/graphql \
 
 Narrow an ambiguous name with a country code, e.g. `activityForecast(place: "Paris", countryCode: "US")` for Paris, Texas. The response always includes the resolved location.
 
+Errors come back with HTTP 200 and an `errors` array, as usual in GraphQL:
+
+```bash
+curl -s https://main-collinson-prod-team.light-cloud.io/graphql \
+  -H 'content-type: application/json' \
+  -d '{"query":"query ($place: String!) { activityForecast(place: $place) { location { name } } }","variables":{"place":"Xyzxyzq"}}'
+# {"errors":[{"message":"No location found for \"Xyzxyzq\"", … "extensions":{"code":"LOCATION_NOT_FOUND"}}],"data":null}
+```
+
 | Error code (`errors[0].extensions.code`) | When |
 |---|---|
 | `BAD_USER_INPUT` | `place` is empty or over 100 characters, or `countryCode` isn't two capital letters |
@@ -43,7 +52,11 @@ Narrow an ambiguous name with a country code, e.g. `activityForecast(place: "Par
 
 Over 60 requests a minute from one IP gets HTTP 429. A query with more than 3 aliases, or one that is too deep or too long, is rejected before it runs.
 
-A [Bruno](https://www.usebruno.com) collection in [`bruno/`](bruno/) covers every scenario with assertions. It runs against your local server or the live one.
+A [Bruno](https://www.usebruno.com) collection in [`bruno/`](bruno/) covers 7 scenarios with assertions: ski town, surf town, inland surfing, an ambiguous name, an unknown place, empty input, and too many aliases. Run it against the live service without installing anything:
+
+```bash
+cd bruno && npx --yes @usebruno/cli@latest run --env light-cloud   # or --env local
+```
 
 ## Run it locally
 

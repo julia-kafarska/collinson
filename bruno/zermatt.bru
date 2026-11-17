@@ -27,6 +27,10 @@ body:graphql:vars {
   }
 }
 
+vars:pre-request {
+  baseUrl: https://main-collinson-prod-team.light-cloud.io
+}
+
 assert {
   res.status: eq 200
   res.body.errors: isUndefined
@@ -35,7 +39,7 @@ assert {
 
 tests {
   const { activities } = res.body.data.activityForecast;
-
+  
   test('all four activities, ranked 1 to 4', function () {
     expect(activities.map((a) => a.rank)).to.eql([1, 2, 3, 4]);
     expect(activities.map((a) => a.activity).sort()).to.eql([
@@ -45,7 +49,7 @@ tests {
       'SURFING',
     ]);
   });
-
+  
   test('7 days each, every score from 0 to 100', function () {
     for (const { score, days } of activities) {
       expect(score).to.be.within(0, 100);

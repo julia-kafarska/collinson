@@ -55,7 +55,7 @@ Over 60 requests a minute from one IP gets HTTP 429. A query with more than 3 al
 A [Bruno](https://www.usebruno.com) collection in [`bruno/`](bruno/) covers 7 scenarios with assertions: ski town, surf town, inland surfing, an ambiguous name, an unknown place, empty input, and too many aliases. Run it against the live service without installing anything:
 
 ```bash
-cd bruno && npx --yes @usebruno/cli@latest run --env light-cloud   # or --env local
+cd bruno && npx --yes @usebruno/cli@latest run   # live by default; add --env local for your server
 ```
 
 ## Run it locally

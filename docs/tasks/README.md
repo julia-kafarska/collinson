@@ -4,14 +4,14 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**97% done** · 142 of 145 checklist items · 21 of 22 tasks · updated 2026-11-17
+**97% done** · 143 of 145 checklist items · 21 of 22 tasks · updated 2026-11-17
 
 - **Public repo:** https://github.com/julia-kafarska/collinson. CI is green on every push.
 - **Live:** https://main-collinson-prod-team.light-cloud.io/graphql. The Bruno collection passes against it (23/23).
 - **Done:** T01–T20 and T22. Every hardcoded text and limit is in `src/const/` (D15).
 - **T21, left for you:**
   - tell the recruiter (repo plus live URL);
-  - optionally keep one instance warm (`min_instances: 1`) for the review window;
+  - one instance is kept running for the review window (`min_instances: 1`, since 2026-11-17); set it back to 0 afterwards;
   - run the Bruno collection less than 3 h before the interview, so the database is warm.
 
 ## How to work a task

@@ -12,7 +12,7 @@ Day 2 · Size M (~3–4 h) · Depends on T07, T08, T09 · PRD §8, FR2, FR5–FR
 
 - [ ] The place is resolved from the lookup cache first, then from geocoding. No match throws `LocationNotFoundError`.
 - [ ] Data counts as fresh when it was fetched less than the TTL ago **and** the rows cover today to today+6 in the location's timezone. Fresh data means no upstream call.
-- [ ] Otherwise the forecast and marine data are fetched in parallel and stored in one transaction.
+- [ ] Otherwise the stale sources are fetched in parallel, and each one is stored in its own transaction (`replaceForecast`, `replaceMarine`; D5).
 - [ ] Single-flight: concurrent calls for the same location share one refresh.
 - [ ] If the refresh fails and rows are stored, they are returned with `stale: true`. If nothing is stored, it throws `UpstreamUnavailableError`.
 - [ ] A marine failure doesn't stop the other activities (FR7), and it never overwrites stored marine rows.

@@ -9,6 +9,8 @@ const MAX_SCORE = 100;
 // The weights, the ideal feels-like range and the thunderstorm cap are from PRD §9.
 const WEIGHTS = { feelsLike: 0.3, rain: 0.35, sun: 0.15, gusts: 0.1, weather: 0.1 };
 const THUNDERSTORM_MAX_SCORE = 20;
+// A likely soaking rules out a day on foot however warm and calm, which the weights miss (T15).
+const HEAVY_RAIN_MAX_SCORE = 30;
 
 const FEELS_LIKE_C: Band = {
   // At freezing, a day on foot stops being pleasant for most visitors.
@@ -58,15 +60,17 @@ const INDOOR_MAX_SCORE = 65;
 /** Outdoor sightseeing (PRD §9): mild, dry, sunny and calm is best. */
 export const scoreOutdoorSightseeing: Scorer = (day) => {
   const conditions = assess(day);
-  const score = weightedScore([
+  let score = weightedScore([
     [WEIGHTS.feelsLike, conditions.feelsLike],
     [WEIGHTS.rain, conditions.rain],
     [WEIGHTS.sun, conditions.sunShare],
     [WEIGHTS.gusts, conditions.gusts],
     [WEIGHTS.weather, weatherQuality(day.weatherCode)],
   ]);
+  if (conditions.thunderstorm) score = capScore(score, THUNDERSTORM_MAX_SCORE);
+  if (conditions.heavyRain) score = capScore(score, HEAVY_RAIN_MAX_SCORE);
   return {
-    score: conditions.thunderstorm ? capScore(score, THUNDERSTORM_MAX_SCORE) : score,
+    score,
     reasons: [
       conditions.thunderstorm
         ? 'Thunderstorm: stay inside'
@@ -103,6 +107,9 @@ function assess(day: DailyWeather) {
   const polarNight = day.daylightSeconds <= 0;
   return {
     thunderstorm: isThunderstorm(day.weatherCode),
+    heavyRain:
+      day.precipitationProbabilityPct >= RAIN_LIKELY_PCT &&
+      day.precipitationMm >= RAIN_MM.zeroAbove,
     polarNight,
     feelsLike: band(day.apparentTempMaxC, FEELS_LIKE_C),
     // Mean, not min: the probability is the day's highest hourly chance, so a passing shower can

@@ -1,6 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import { describe, expect, it } from 'vitest';
-import { BODY_LIMIT_BYTES, registerProtection, trustProxy } from './protection.js';
+import { BODY_LIMIT_BYTES } from '../const/limits.js';
+import { registerProtection, trustProxy } from './protection.js';
 
 const TEST_MAX = 3;
 // Light Cloud's chain, measured in DECISIONS D14: Cloudflare appends the client's address, Light

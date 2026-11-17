@@ -1,6 +1,7 @@
 import { GraphQLError } from 'graphql';
 import { z } from 'zod';
 import { ERROR_CODES, USER_MESSAGES } from '../const/errors.js';
+import { COUNTRY_CODE_PATTERN, MAX_PLACE_LENGTH } from '../const/limits.js';
 import type { Activity } from '../domain.js';
 import { LocationNotFoundError, UpstreamUnavailableError } from '../errors.js';
 import type { ForecastService } from '../forecast/forecast-service.js';
@@ -12,8 +13,6 @@ export interface ResolverDeps {
   scorers: Record<Activity, Scorer>;
 }
 
-const MAX_PLACE_LENGTH = 100;
-
 const inputSchema = z.object({
   place: z
     .string()
@@ -22,7 +21,7 @@ const inputSchema = z.object({
     .max(MAX_PLACE_LENGTH, USER_MESSAGES.placeTooLong(MAX_PLACE_LENGTH)),
   countryCode: z
     .string()
-    .regex(/^[A-Z]{2}$/, USER_MESSAGES.countryCodeInvalid)
+    .regex(COUNTRY_CODE_PATTERN, USER_MESSAGES.countryCodeInvalid)
     .nullish()
     .transform((code) => code ?? undefined),
 });

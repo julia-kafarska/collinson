@@ -1,11 +1,8 @@
 import { z } from 'zod';
+import { FORECAST_DAYS, FORECAST_URL, PAST_DAYS } from '../const/open-meteo.js';
 import type { ForecastDay, Location } from '../domain.js';
 import { getJson, type Fetch } from './http.js';
 
-const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
-const FORECAST_DAYS = 7;
-// Yesterday is fetched only to give the first day its fresh snow (DECISIONS D6).
-const PAST_DAYS = 1;
 const RESPONSE_DAYS = PAST_DAYS + FORECAST_DAYS;
 
 // Unlike marine data, a null here means a broken forecast, so it fails validation.

@@ -2,9 +2,6 @@ import { UPSTREAM_MESSAGES } from '../const/errors.js';
 import { UpstreamUnavailableError } from '../errors.js';
 import type { Fetch } from './http.js';
 
-/** Half of Open-Meteo's free tier (600 calls a minute, 10,000 a day), for margin (PRD §10). */
-export const UPSTREAM_BUDGET = { perMinute: 300, perDay: 5000 } as const;
-
 const MINUTE_MS = 60_000;
 const DAY_MS = 86_400_000;
 

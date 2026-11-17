@@ -1,11 +1,9 @@
 import type { ZodType } from 'zod';
 import { UPSTREAM_MESSAGES } from '../const/errors.js';
+import { UPSTREAM_ATTEMPTS, UPSTREAM_TIMEOUT_MS } from '../const/limits.js';
 import { UpstreamUnavailableError } from '../errors.js';
 
 export type Fetch = typeof fetch;
-
-const TIMEOUT_MS = 5_000;
-const ATTEMPTS = 2;
 
 /**
  * GETs JSON from Open-Meteo and validates it. Network errors, timeouts and 5xx are retried once;
@@ -13,10 +11,10 @@ const ATTEMPTS = 2;
  */
 export async function getJson<T>(fetchFn: Fetch, url: URL, schema: ZodType<T>): Promise<T> {
   let lastError: unknown;
-  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+  for (let attempt = 1; attempt <= UPSTREAM_ATTEMPTS; attempt++) {
     let response: Response;
     try {
-      response = await fetchFn(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
+      response = await fetchFn(url, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
     } catch (error) {
       // Refused before it was sent (the call cap), so a retry would only be refused again.
       if (error instanceof UpstreamUnavailableError) throw error;

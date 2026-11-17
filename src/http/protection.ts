@@ -1,13 +1,7 @@
 import rateLimit from '@fastify/rate-limit';
 import type { FastifyInstance } from 'fastify';
-
-export const BODY_LIMIT_BYTES = 16 * 1024;
-
-export const RATE_LIMIT = { max: 60, timeWindow: '1 minute' } as const;
-
-// Measured on Light Cloud (DECISIONS D14): Cloud Run's proxy, then Cloudflare's entry. Too few puts
-// every client in one proxy's bucket; too many lets a client pick its own IP via X-Forwarded-For.
-export const TRUSTED_PROXY_HOPS = 2;
+import { RATE_LIMIT, TRUSTED_PROXY_HOPS } from '../const/limits.js';
+import { LOG_MESSAGES } from '../const/log-messages.js';
 
 /**
  * Fastify's `trustProxy` option. Fastify no longer takes a hop count there (a number now trusts
@@ -30,6 +24,6 @@ export async function registerProtection(
   await app.register(rateLimit, {
     max: options.max ?? RATE_LIMIT.max,
     timeWindow: options.timeWindow ?? RATE_LIMIT.timeWindow,
-    onExceeded: (request) => request.log.warn({ ip: request.ip }, 'rate limit exceeded'),
+    onExceeded: (request) => request.log.warn({ ip: request.ip }, LOG_MESSAGES.rateLimitExceeded),
   });
 }

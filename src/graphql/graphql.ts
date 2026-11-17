@@ -1,19 +1,9 @@
 import type { Logger } from '@graphql-hive/logger';
 import { createSchema, createYoga } from 'graphql-yoga';
+import { EXAMPLE_QUERY } from '../const/server.js';
 import { graphqlLimitPlugins } from './limits.js';
 import { createResolvers, type ResolverDeps } from './resolvers.js';
 import { typeDefs } from './schema.js';
-
-// Pre-filled in GraphiQL, so a reviewer can press run straight away.
-export const EXAMPLE_QUERY = `query Zermatt {
-  activityForecast(place: "Zermatt") {
-    location { name country timezone }
-    fetchedAt
-    stale
-    activities { activity rank score bestDay days { date score reasons } }
-  }
-}
-`;
 
 export interface GraphQLDeps extends ResolverDeps {
   logging: Logger | boolean;

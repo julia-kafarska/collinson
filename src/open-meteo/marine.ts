@@ -1,9 +1,7 @@
 import { z } from 'zod';
+import { FORECAST_DAYS, MARINE_URL } from '../const/open-meteo.js';
 import type { Location, MarineDay } from '../domain.js';
 import { getJson, type Fetch } from './http.js';
-
-const MARINE_URL = 'https://marine-api.open-meteo.com/v1/marine';
-const FORECAST_DAYS = 7;
 
 const values = z.array(z.number().nullable()).length(FORECAST_DAYS);
 

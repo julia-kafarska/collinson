@@ -2,10 +2,12 @@ import { Logger } from '@graphql-hive/logger';
 import { PinoLogWriter } from '@graphql-hive/logger/writers/pino';
 import Fastify, { type FastifyInstance } from 'fastify';
 import type { Pool } from 'pg';
+import { BODY_LIMIT_BYTES, UPSTREAM_BUDGET } from './const/limits.js';
+import { HEALTH_PATH } from './const/server.js';
 import { createForecastService } from './forecast/forecast-service.js';
 import { createGraphQL } from './graphql/graphql.js';
-import { BODY_LIMIT_BYTES, registerProtection, trustProxy } from './http/protection.js';
-import { createUpstreamBudget, UPSTREAM_BUDGET } from './open-meteo/budget.js';
+import { registerProtection, trustProxy } from './http/protection.js';
+import { createUpstreamBudget } from './open-meteo/budget.js';
 import { geocode } from './open-meteo/geocoding.js';
 import { fetchForecast } from './open-meteo/forecast.js';
 import type { Fetch } from './open-meteo/http.js';
@@ -56,7 +58,7 @@ export async function buildApp({
     logging: new Logger({ writers: [new PinoLogWriter(app.log)] }),
   });
 
-  app.get('/health', { config: { rateLimit: false } }, async () => ({ status: 'ok' }));
+  app.get(HEALTH_PATH, { config: { rateLimit: false } }, async () => ({ status: 'ok' }));
 
   app.route({
     url: yoga.graphqlEndpoint,

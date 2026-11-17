@@ -45,7 +45,7 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 | [T19](T19-bruno-and-curl.md) | Bruno collection and curl examples | 4 | S · 1 h | T16 | in progress (agent) |
 | [T20](T20-readme-and-docs.md) | README and process docs | 5 | S · 2 h | T15–T19 | in progress: README drafted |
 | [T21](T21-release.md) | Release | 5 | S · 1 h | T20 | todo |
-| [T22](T22-constants-folder.md) | Hardcoded constants in `src/const` | 5 | M · 2 h | T15 (part B) | in progress (agent, part A) |
+| [T22](T22-constants-folder.md) | Hardcoded constants in `src/const` | 5 | M · 2 h | T15 (part B) | part A merged; part B waits for T15 |
 
 Sizes: S is up to 2 hours, M is 2–4 hours.
 

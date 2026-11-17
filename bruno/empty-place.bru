@@ -1,0 +1,34 @@
+meta {
+  name: Empty place (BAD_USER_INPUT)
+  type: graphql
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query ActivityForecast($place: String!, $countryCode: String) {
+    activityForecast(place: $place, countryCode: $countryCode) {
+      location { name country region latitude longitude elevation timezone }
+      fetchedAt
+      stale
+      activities { activity rank score bestDay days { date score reasons } }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "place": ""
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.errors[0].extensions.code: eq BAD_USER_INPUT
+  res.body.data: isNull
+}

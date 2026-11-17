@@ -1,0 +1,45 @@
+meta {
+  name: Biarritz, FR (surf town)
+  type: graphql
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query ActivityForecast($place: String!, $countryCode: String) {
+    activityForecast(place: $place, countryCode: $countryCode) {
+      location { name country region latitude longitude elevation timezone }
+      fetchedAt
+      stale
+      activities { activity rank score bestDay days { date score reasons } }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "place": "Biarritz",
+    "countryCode": "FR"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.errors: isUndefined
+  res.body.data.activityForecast.location.name: eq Biarritz
+  res.body.data.activityForecast.location.country: eq France
+}
+
+tests {
+  test('SURFING is present and scores above 0', function () {
+    const { activities } = res.body.data.activityForecast;
+    const surfing = activities.find((a) => a.activity === 'SURFING');
+    expect(surfing).to.be.an('object');
+    expect(surfing.score).to.be.above(0);
+  });
+}

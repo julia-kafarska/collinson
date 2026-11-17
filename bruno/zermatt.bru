@@ -1,0 +1,56 @@
+meta {
+  name: Zermatt (ski town)
+  type: graphql
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query ActivityForecast($place: String!, $countryCode: String) {
+    activityForecast(place: $place, countryCode: $countryCode) {
+      location { name country region latitude longitude elevation timezone }
+      fetchedAt
+      stale
+      activities { activity rank score bestDay days { date score reasons } }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "place": "Zermatt"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.errors: isUndefined
+  res.body.data.activityForecast.location.name: eq Zermatt
+}
+
+tests {
+  const { activities } = res.body.data.activityForecast;
+
+  test('all four activities, ranked 1 to 4', function () {
+    expect(activities.map((a) => a.rank)).to.eql([1, 2, 3, 4]);
+    expect(activities.map((a) => a.activity).sort()).to.eql([
+      'INDOOR_SIGHTSEEING',
+      'OUTDOOR_SIGHTSEEING',
+      'SKIING',
+      'SURFING',
+    ]);
+  });
+
+  test('7 days each, every score from 0 to 100', function () {
+    for (const { score, days } of activities) {
+      expect(score).to.be.within(0, 100);
+      expect(days).to.have.lengthOf(7);
+      for (const day of days) expect(day.score).to.be.within(0, 100);
+    }
+  });
+}

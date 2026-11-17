@@ -418,7 +418,7 @@ Coverage is a signal, not a goal. Expect high coverage in `scoring/` and `foreca
 - **GitHub Actions** runs `npm run check` on every push, with a Postgres service container for the integration tests, then `npm audit`. It takes minutes to set up and keeps `main` green.
 - Prettier for formatting, ESLint with `typescript-eslint`, conventional commits.
 - Node version pinned with `.nvmrc` and `engines`. The lockfile is committed.
-- `.env.example` documents every setting: `PORT`, `DATABASE_URL`, TTL. The only secret is `DATABASE_URL`: an environment variable on Light Cloud, and a git-ignored `.env` locally.
+- `.env.example` documents every setting. Only `DATABASE_URL` is set there; `PORT` and the TTL are listed as optional overrides, with their defaults kept in one place, `src/const/`. The only secret is `DATABASE_URL`: an environment variable on Light Cloud, and a git-ignored `.env` locally.
 
 ### Definition of done (per change)
 

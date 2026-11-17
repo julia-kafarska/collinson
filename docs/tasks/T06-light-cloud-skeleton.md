@@ -19,8 +19,8 @@ Day 1 · Size S (~1.5 h) · Depends on T04, T05 · PRD §13
   - [ ] Postgres major version, matched in `docker-compose.yml`: Light Cloud runs 15.19 (D12). Switch local and CI once the T09 agent has finished with the local database.
   - [x] Connection limit of the shared tier, matched in the pool size: 10 per role, so the pool stays at 5 (D13).
   - [x] Whether the connection needs SSL: yes. node-postgres needs `uselibpqcompat=true&sslmode=require` (D11).
-  - [ ] How many proxies add to `X-Forwarded-For` (T17 needs this). Requests pass through Cloudflare (`server: cloudflare`), Light Cloud's edge (`x-lc-edge`) and Cloud Run.
-  - [ ] Node version of the runtime, matched in `engines`. The startup log now prints `process.version`; read it after the next deploy.
+  - [x] How many proxies add to `X-Forwarded-For` (T17 needs this): 2 trusted hops (D14). The chain is client, then Cloudflare, then Cloud Run's proxy as the socket.
+  - [x] Node version of the runtime, matched in `engines`: Light Cloud runs v24.22.3, and `engines` says `24.x`.
 
 ## Notes
 

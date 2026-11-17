@@ -75,3 +75,10 @@ Decisions in the order they were made. Each entry gives the decision, the option
 
 - **Decision:** keep the `pg` pool at 5.
 - **Why:** The shared instance limits our database role to 10 connections. With one app instance, 5 leaves room for migrations and manual access.
+
+## D14 · Trust 2 proxy hops (2026-11-17)
+
+- **Decision:** Fastify's `trustProxy` is `2`.
+- **Evidence:** a request logged on Light Cloud with `X-Forwarded-For: <client>, <Cloudflare IP>`; the socket itself comes from Cloud Run's proxy. A request sent with a forged `X-Forwarded-For: 203.0.113.77` arrived as `203.0.113.77, <client>, <Cloudflare IP>`. Two trusted hops give the real client, and forged entries stay on the left, where they are ignored.
+- **Options:** `true`, which trusts the leftmost entry, so any client could fake its IP to dodge the rate limit; `1`, which would rate-limit Cloudflare's IP, i.e. everyone at once.
+- **Limit:** a request sent straight to the Cloud Run URL, bypassing Cloudflare, has one hop fewer, and its client could choose its IP. That URL isn't published.

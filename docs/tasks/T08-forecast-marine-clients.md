@@ -11,13 +11,13 @@ Day 2 · Size M (~2–3 h) · Depends on T03 · PRD §7, §8
 
 ## Done when
 
-- [ ] The forecast request asks for the daily fields in PRD §7 (including `snow_depth_max`), with `timezone=<location tz>`, `forecast_days=7` and `past_days=1`. No hourly data.
-- [ ] The marine request asks for `wave_height_max`, `swell_wave_height_max` and `swell_wave_period_max`, with the same timezone and `forecast_days=7`.
-- [ ] zod schemas: forecast values must be numbers, marine values may be `null`.
-- [ ] Snow depth is converted from metres to centimetres once, in the parser. Field names carry the unit, e.g. `snowDepthMaxCm`.
-- [ ] Each forecast day carries `freshSnowCm`, the previous day's `snowfall_sum`.
-- [ ] Marine data where every value is `null` gives an empty result (no sea nearby). A failed marine request throws, so T10 can tell the two cases apart.
-- [ ] Same timeout and retry rules as T07. `fetch` is passed in.
+- [x] The forecast request asks for the daily fields in PRD §7 (including `snow_depth_max`), with `timezone=<location tz>`, `forecast_days=7` and `past_days=1`. No hourly data.
+- [x] The marine request asks for `wave_height_max`, `swell_wave_height_max` and `swell_wave_period_max`, with the same timezone and `forecast_days=7`.
+- [x] zod schemas: forecast values must be numbers, marine values may be `null`.
+- [x] Snow depth is converted from metres to centimetres once, in the parser. Field names carry the unit, e.g. `snowDepthMaxCm`.
+- [x] Each forecast day carries `freshSnowCm`, the previous day's `snowfall_sum`.
+- [x] Marine data where every value is `null` gives an empty result (no sea nearby). A failed marine request throws, so T10 can tell the two cases apart.
+- [x] Same timeout and retry rules as T07. `fetch` is passed in.
 
 ## Tests first
 

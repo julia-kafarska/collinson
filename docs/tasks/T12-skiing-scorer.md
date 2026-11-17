@@ -4,9 +4,9 @@ Day 3 · Size S (~1 h) · Depends on T11 · PRD §9
 
 **Goal:** Score one day for skiing, with reasons.
 
-## Decide first
+## Decided
 
-- Same-day or previous-day fresh snow (see Open decisions on the [board](README.md)).
+- Fresh snow is the day's `freshSnowCm`: the previous day's snowfall, filled in by the parser (docs/DECISIONS.md, D6).
 
 ## Done when
 

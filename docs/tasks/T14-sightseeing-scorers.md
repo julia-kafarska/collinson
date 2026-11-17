@@ -4,16 +4,16 @@ Day 3 · Size S (~1.5 h) · Depends on T11 · PRD §9, Q4
 
 **Goal:** Score one day for outdoor and for indoor sightseeing, with reasons.
 
-## Decide first
+## Decided
 
-- The indoor formula (see Open decisions on the [board](README.md)).
+- Indoor is `100 − outdoor` (docs/DECISIONS.md, D7). T15 checks it against real weeks.
 
 ## Done when
 
 - [ ] Outdoor factors and weights from PRD §9: apparent temperature 16–26 °C (0.3), rain probability and amount (0.35), sunny share of daylight (0.15), gusts (0.1), weather (0.1).
 - [ ] Outdoor cap: a thunderstorm gives at most 20.
 - [ ] The sunny share is 0 when daylight is 0 (polar night, T02). It is never `NaN`.
-- [ ] Indoor is derived from outdoor, using the chosen formula.
+- [ ] Indoor is `100 − outdoor`.
 - [ ] Thresholds are named constants, and every score has at least one reason.
 
 ## Tests first

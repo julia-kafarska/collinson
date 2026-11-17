@@ -4,9 +4,9 @@ Day 2 · Size M (~3–4 h) · Depends on T07, T08, T09 · PRD §8, FR2, FR5–FR
 
 **Goal:** One call, `getWeek(place, countryCode?)`, that returns the location and its next 7 days, and goes to Open-Meteo only when it has to.
 
-## Decide first
+## Decided
 
-- How a Marine API failure is stored (see Open decisions on the [board](README.md)).
+- Forecast and marine data are checked and refreshed separately, each with its own fetch time. A marine failure keeps the last good marine rows (docs/DECISIONS.md, D5).
 
 ## Done when
 
@@ -15,7 +15,7 @@ Day 2 · Size M (~3–4 h) · Depends on T07, T08, T09 · PRD §8, FR2, FR5–FR
 - [ ] Otherwise the forecast and marine data are fetched in parallel and stored in one transaction.
 - [ ] Single-flight: concurrent calls for the same location share one refresh.
 - [ ] If the refresh fails and rows are stored, they are returned with `stale: true`. If nothing is stored, it throws `UpstreamUnavailableError`.
-- [ ] A marine failure doesn't stop the other activities (FR7), following the marine decision.
+- [ ] A marine failure doesn't stop the other activities (FR7), and it never overwrites stored marine rows.
 - [ ] `fetchedAt` is returned.
 - [ ] The clock (`now()`) is passed in, and "today" is computed in the location's timezone.
 - [ ] Cache hits and misses, and upstream durations, are logged (PRD §11).

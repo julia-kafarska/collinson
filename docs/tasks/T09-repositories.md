@@ -2,18 +2,19 @@
 
 Day 2 · Size M (~2–3 h) · Depends on T04 · PRD §8, §10
 
-**Goal:** Read and write locations, place lookups and daily weather in Postgres.
+**Goal:** Read and write locations, place lookups, daily weather and daily marine data in Postgres.
 
-## Decide first
+## Decided
 
-- How marine data is stored (see Open decisions on the [board](README.md)).
+- Forecast and marine rows live in separate tables, each with its own fetch time (docs/DECISIONS.md, D5).
 
 ## Done when
 
 - [ ] `location-repo.findByLookup(query, countryCode)` normalises the query (trimmed, lower-cased) and stores "no country" as `''`.
 - [ ] `location-repo.save(location, query, countryCode)` upserts the location and its lookup.
-- [ ] `weather-repo.replaceWeek(locationId, rows, fetchedAt)` deletes and inserts the location's rows and sets `forecast_fetched_at`, all in one transaction.
-- [ ] `weather-repo.readFrom(locationId, today)` returns rows with `date >= today`, ordered by date.
+- [ ] `weather-repo.replaceForecast(locationId, days, fetchedAt)` replaces the location's `daily_weather` rows and sets `forecast_fetched_at`, in one transaction.
+- [ ] `weather-repo.replaceMarine(locationId, days, fetchedAt)` does the same for `daily_marine` and `marine_fetched_at`.
+- [ ] Reads return rows with `date >= today`, ordered by date, together with the fetch times.
 - [ ] Parameterised SQL only.
 
 ## Tests first
@@ -21,10 +22,11 @@ Day 2 · Size M (~2–3 h) · Depends on T04 · PRD §8, §10
 Integration tests on a fresh schema:
 
 - A lookup without a country is found on the second call, with no duplicate row.
-- Calling `replaceWeek` twice still leaves 7 rows.
+- Replacing a week twice still leaves 7 rows.
 - A failing insert leaves the old week intact.
-- `readFrom` skips days before today.
+- Replacing marine rows leaves the forecast rows alone, and the other way round.
+- Reads skip days before today.
 
 ## Notes
 
-- `readFrom(today)` stops yesterday from appearing when stale data is served after local midnight.
+- Reading from today stops yesterday from appearing when stale data is served after local midnight.

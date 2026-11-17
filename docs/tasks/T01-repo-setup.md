@@ -4,17 +4,17 @@ Day 1 · Size S (~30 min) · Depends on — · PRD §14, §17
 
 **Goal:** A clean repo that is safe to make public later, with the process logs started.
 
-## Decide first
+## Decided
 
-- Whether the brief `.docx` goes into git (see Open decisions on the [board](README.md)).
+- The brief `.docx` stays out of git (docs/DECISIONS.md, D4).
 
 ## Done when
 
-- [ ] Root `.gitignore` covers `node_modules/`, `dist/`, `coverage/`, `.env`, `.idea/`, and the `.docx` if it stays out.
-- [ ] `docs/DECISIONS.md` started. First entries: TypeScript on Node 24, PostgreSQL on Light Cloud, Fastify under Yoga. Each entry gives the decision, the options considered and why this one won.
-- [ ] `docs/AI-NOTES.md` started: which AI tools are used, and for what.
-- [ ] First commit with `docs/` (PRD and tasks).
-- [ ] Private GitHub repo created and pushed. It goes public in T21.
+- [x] Root `.gitignore` covers `node_modules/`, `dist/`, `coverage/`, `.env`, `.idea/`, and the `.docx`.
+- [x] `docs/DECISIONS.md` started. First entries: TypeScript on Node 24, PostgreSQL on Light Cloud, Fastify under Yoga. Each entry gives the decision, the options considered and why this one won.
+- [x] `docs/AI-NOTES.md` started: which AI tools are used, and for what.
+- [x] First commit with `docs/` (PRD and tasks).
+- [ ] Private GitHub repo created and pushed. It goes public in T21. **Waiting for approval:** creating a repo on GitHub is an outside action.
 
 ## Notes
 

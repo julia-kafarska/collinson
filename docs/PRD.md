@@ -1,10 +1,11 @@
 # PRD: Activity Weather Ranking Service
 
-Status: Draft v0.2 · 2026-11-17
-Source brief: [`lead-snr-engineer-test-062026.docx`](./lead-snr-engineer-test-062026.docx)
+Status: Draft v0.3 · 2026-11-17
+Source brief: the recruiter's take-home brief. The file is kept out of git (docs/DECISIONS.md, D4); its requirements are summarised in sections 1 and 2.
 
 Change log:
 - v0.2 (2026-11-17): storage moved from SQLite to PostgreSQL, because the service will be deployed to Light Cloud, which provides managed Postgres. Added basic security (section 10) and the Light Cloud deployment (section 13).
+- v0.3 (2026-11-17): Open-Meteo spike results recorded (section 7). Daily `snow_depth_max` replaces the hourly aggregation. Marine data moved to its own table with its own fetch time (section 8). Fresh snow now counts the previous day's snowfall, and indoor sightseeing is `100 − outdoor` (section 9). Light Cloud platform facts added (section 13). See docs/DECISIONS.md, D4–D9.
 
 ## 1. Context
 
@@ -42,7 +43,7 @@ These are the questions I would normally put to a product manager. Each one has 
 | Q1 | What does "rank" mean: rank the 4 activities against each other, or rank the 7 days within each activity? | **Both.** Every activity gets a weekly score (0–100) and the activities are sorted by it. Each activity also has a score for each of the 7 days and a `bestDay`. | Removing a field is cheap. The data is already computed. |
 | Q2 | Ambiguous names ("Paris" in France or in Texas)? | Take the top Open-Meteo geocoding match, which is ordered by relevance and population. Accept an optional `countryCode` to narrow it down. The response always returns the location that was resolved, so the client can see what was chosen. | Add a `searchLocations` query so the client can choose. Out of scope for now. |
 | Q3 | Surfing for an inland city? | Score is 0 with the reason "no marine data for this location". It still appears in the ranking, at the bottom. | Make the score nullable or leave the activity out. A small schema change. |
-| Q4 | What makes a day "good" for indoor sightseeing? | Indoor is always possible. It has a baseline score and goes up when outdoor conditions are poor: rain, cold, heat, wind. | Swap the scorer. It's one file. |
+| Q4 | What makes a day "good" for indoor sightseeing? | Indoor is always possible, so it is the fallback: it scores high when outdoor conditions are poor (rain, cold, heat, wind). Score = `100 − outdoor`. | Swap the scorer. It's one file. |
 | Q5 | How is the weekly score built from 7 daily scores? | Mean of the daily scores. `bestDay` is shown alongside so a single great powder day isn't hidden. | Change the aggregation function. Max, top-N mean, etc. |
 | Q6 | How fresh must the data be? | Forecasts are refreshed when they are older than **3 h** (configurable). Open-Meteo models update every 1–6 h, so refreshing more often adds little. | Change the TTL in config. |
 | Q7 | What does "next 7 days" mean? | Today plus 6 days, in the **location's** timezone, not the server's. | — |
@@ -145,16 +146,17 @@ Errors use `extensions.code`: `BAD_USER_INPUT`, `LOCATION_NOT_FOUND`, `UPSTREAM_
 | API | Endpoint | Fields used |
 |-----|----------|-------------|
 | Geocoding | `geocoding-api.open-meteo.com/v1/search` | id, name, country, admin1, latitude, longitude, elevation, timezone |
-| Forecast | `api.open-meteo.com/v1/forecast` | daily: `temperature_2m_max/min`, `apparent_temperature_max`, `precipitation_sum`, `precipitation_probability_max`, `snowfall_sum`, `weather_code`, `wind_speed_10m_max`, `wind_gusts_10m_max`, `sunshine_duration`, `daylight_duration`; hourly: `snow_depth`, aggregated to a daily max |
+| Forecast | `api.open-meteo.com/v1/forecast` | daily: `temperature_2m_max/min`, `apparent_temperature_max`, `precipitation_sum`, `precipitation_probability_max`, `snowfall_sum`, `weather_code`, `wind_speed_10m_max`, `wind_gusts_10m_max`, `sunshine_duration`, `daylight_duration`, `snow_depth_max` |
 | Marine | `marine-api.open-meteo.com/v1/marine` | daily: `wave_height_max`, `swell_wave_height_max`, `swell_wave_period_max` |
 
-Calls use `timezone=<location tz>` and `forecast_days=7`. Free tier limits are roughly 10k calls/day and 600/min, and only for non-commercial use. Persistence keeps us well under these limits.
+Calls use `timezone=<location tz>` and `forecast_days=7`. The forecast call also sends `past_days=1`, so day 1 has a previous day for fresh snow (section 9). Free tier limits are roughly 10k calls/day and 600/min, and only for non-commercial use. Persistence keeps us well under these limits.
 
-**Spike needed on day 1.** These are API behaviours I haven't confirmed yet:
+**Spike results** (2026-11-17, live API; details in `docs/tasks/T02-open-meteo-spike.md`):
 
-- What the Marine API returns for inland coordinates: nulls, an error, or the nearest ocean cell.
-- Whether `snow_depth` is hourly only.
-- Whether geocoding ranks "Paris" as Paris, France.
+- Marine, inland coordinates: HTTP 200 with every wave value `null`. Coastal towns snap to a nearby sea cell and get data.
+- Snow depth: a daily `snow_depth_max` exists, so no hourly data is needed. It arrives in **metres**, while `snowfall_sum` is in **centimetres**, so the parser converts depth to cm.
+- Geocoding ranks "Paris" as Paris, France first, and `countryCode` filters. An unknown name returns no `results` key at all, not an empty list.
+- Polar night: `daylight_duration` can be 0 (Longyearbyen now, Tromsø from 30 November).
 
 ## 8. Persistence and refresh
 
@@ -177,8 +179,8 @@ CREATE TABLE locations (
   longitude           double precision NOT NULL,
   elevation           real,                        -- m
   timezone            text NOT NULL,               -- IANA name, e.g. Europe/Zurich
-  forecast_fetched_at timestamptz,                 -- NULL until the first fetch
-  marine_available    boolean                      -- NULL until the first marine fetch
+  forecast_fetched_at timestamptz,                 -- NULL until the first forecast fetch
+  marine_fetched_at   timestamptz                  -- NULL until the first marine fetch
 );
 
 -- Caches geocoding. Places don't move, so rows never expire.
@@ -199,15 +201,24 @@ CREATE TABLE daily_weather (
   precipitation_sum             real NOT NULL,     -- mm
   precipitation_probability_max smallint NOT NULL, -- %
   snowfall_sum                  real NOT NULL,     -- cm
+  fresh_snow_cm                 real NOT NULL,     -- cm: the previous day's snowfall (D6)
   snow_depth_max                real NOT NULL,     -- cm (Open-Meteo sends metres; converted when parsed)
   weather_code                  smallint NOT NULL, -- WMO code
   wind_speed_max                real NOT NULL,     -- km/h
   wind_gusts_max                real NOT NULL,     -- km/h
   sunshine_duration             real NOT NULL,     -- s
   daylight_duration             real NOT NULL,     -- s
-  wave_height_max               real,              -- m; NULL without marine data
-  swell_wave_height_max         real,              -- m; NULL without marine data
-  swell_wave_period_max         real,              -- s; NULL without marine data
+  PRIMARY KEY (location_id, date)
+);
+
+-- Marine data has its own table and fetch time, so a failed marine call
+-- never overwrites good wave data (docs/DECISIONS.md, D5).
+CREATE TABLE daily_marine (
+  location_id           bigint NOT NULL REFERENCES locations (id) ON DELETE CASCADE,
+  date                  date NOT NULL,             -- local date at the location
+  wave_height_max       real,                      -- m; NULL = no sea nearby
+  swell_wave_height_max real,                      -- m
+  swell_wave_period_max real,                      -- s
   PRIMARY KEY (location_id, date)
 );
 ```
@@ -217,10 +228,10 @@ The primary keys cover every query (a place lookup, and a location's rows by dat
 **Refresh strategy: read-through cache with a TTL.**
 
 1. Request comes in. Resolve the place, using `place_lookups` first and the Geocoding API on a miss.
-2. If `forecast_fetched_at` is less than 3 h old and the stored days cover today through today+6 (location time), serve from the database.
-3. Otherwise call the Forecast and Marine APIs in parallel, then replace that location's `daily_weather` rows and update `forecast_fetched_at` in a single transaction. Readers see either the old week or the new one, never a mix.
-4. Concurrent requests for the same location share one in-flight upstream call (single-flight), so there is no stampede. This works per instance, which covers every request while there is only one (section 13).
-5. If the upstream call fails, fall back to stale rows (FR6).
+2. Each source (forecast, marine) is fresh if its fetch time is less than 3 h old and its stored days cover today through today+6 (location time). Fresh sources are served from the database.
+3. Stale sources are fetched again, in parallel. Each one replaces its own rows and fetch time in its own transaction. Readers see either the old week or the new one, never a mix, and a failure in one source never touches the other.
+4. Concurrent requests for the same location share one in-flight refresh (single-flight), so there is no stampede. This works per instance, which covers every request while there is only one (section 13).
+5. If a refresh fails, the last stored rows are served with `stale: true` (FR6). Rows are always read from today onwards, so a day that has passed is never shown.
 
 Why lazy refresh and not a cron job: we don't know in advance which places will be requested, and refreshing every location ever seen wastes calls. A scheduled job that warms popular locations can come later.
 
@@ -232,10 +243,16 @@ The thresholds below are starting heuristics, not researched truths. They are tu
 
 | Activity | Factors (weight) | Hard caps |
 |----------|------------------|-----------|
-| Skiing | snow depth, 50 cm+ ideal (0.4) · fresh snowfall, 10 cm+ ideal (0.25) · max temp −10..0 °C (0.15) · gusts < 30 km/h (0.1) · weather/visibility (0.1) | snow depth < 10 cm → max 10 · gusts > 60 km/h → max 30 |
+| Skiing | snow depth, 50 cm+ ideal (0.4) · fresh snow (the previous day's snowfall), 10 cm+ ideal (0.25) · max temp −10..0 °C (0.15) · gusts < 30 km/h (0.1) · weather/visibility (0.1) | snow depth < 10 cm → max 10 · gusts > 60 km/h → max 30 |
 | Surfing | wave height 1–2.5 m (0.4) · swell period 10 s+ (0.3) · wind < 15 km/h (0.2) · weather (0.1) | no marine data → 0 · thunderstorm → max 10 · waves < 0.3 m → max 10 |
 | Outdoor sightseeing | apparent temp 16–26 °C (0.3) · rain probability and amount (0.35) · sunshine share of daylight (0.15) · gusts (0.1) · weather (0.1) | thunderstorm → max 20 |
-| Indoor sightseeing | `50 + 0.5 × (100 − outdoorScore)`, which ranges 50–100 | — |
+| Indoor sightseeing | `100 − outdoorScore` | — |
+
+Why these choices (docs/DECISIONS.md, D6 and D7):
+
+- **Fresh snow is the previous day's snowfall.** Snow falling during the day means poor visibility. Counting it would make a blizzard the best ski day, while skiers want the clear day after it.
+- **Indoor is `100 − outdoor`.** An earlier draft used `50 + 0.5 × (100 − outdoor)`. Its floor of 50 let indoor beat skiing on an ordinary overcast day in a ski resort. T15 checks the result against real weeks.
+- **Polar night:** when daylight is 0, the sunny share counts as 0 instead of dividing by zero.
 
 Weekly score is the mean of the 7 daily scores. Activities are sorted by weekly score; ties are broken by the best day's score.
 
@@ -311,8 +328,8 @@ docker-compose.yml   local PostgreSQL
 
 ## 13. Deployment (Light Cloud)
 
-- **Topology:** one Light Cloud container app (Node.js runtime) and one managed PostgreSQL database (`shared-dev` tier), in the same workspace.
-- **App:** created from the GitHub repo, branch `main`, redeployed on every push. Build with `npm run build` (`tsc`). Start with `npm start`, which runs the migrations and then the server. The app listens on `PORT`.
+- **Topology:** one Light Cloud container app (Node.js runtime, `micro` machine: 1 CPU, 512 MB) and one managed PostgreSQL database (`shared-dev` tier, a shared pool on Cloud SQL). Both are in `europe-west1`, the only region with the shared database pool.
+- **App:** created from the GitHub repo, branch `main`, redeployed on every push. Build with `npm run build` (`tsc`). Start with `npm start`, which runs the migrations and then the server. The app listens on `0.0.0.0` and on `PORT`, defaulting to 8080, the Node.js runtime's default port. Listening on `localhost` would make it unreachable inside the container (docs/DECISIONS.md, D9).
 - **Pushing:** Light Cloud deploys on push without waiting for CI, so push only after `npm run check` passes locally.
 - **Scaling:** `max_instances: 1`. The rate limits, the upstream cap and single-flight live in memory, which is only correct with one instance. `min_instances: 1` during the review window, so the first request isn't a cold start; 0 otherwise.
 - **Config:** `DATABASE_URL` is Light Cloud's connection string for the database, set as an environment variable on the app. It is a secret, so it never appears in the repo, logs or docs.
@@ -358,8 +375,9 @@ The tests that matter most:
 - **`band()` helper:** returns 1 inside the ideal range, 0 at and beyond the limits, and moves linearly in between. Boundary values are tested.
 - **Skiing:** no snow caps the score at 10 or less. Deep fresh snow, cold and calm scores 80 or more. Strong gusts cap the score. Warm, slushy days are penalised.
 - **Surfing:** no marine data gives 0 with a reason. A flat sea is capped. A good swell scores high. A thunderstorm is capped.
-- **Outdoor and indoor sightseeing:** a thunderstorm caps outdoor. A mild sunny day scores high. Heavy rain scores low. Indoor moves opposite to outdoor and stays between 50 and 100.
+- **Outdoor and indoor sightseeing:** a thunderstorm caps outdoor. A mild sunny day scores high. Heavy rain scores low. Polar night (daylight 0) still gives a valid score. Indoor is `100 − outdoor`.
 - **Invariants across all fixtures:** every score is an integer from 0 to 100, and every score has at least one reason.
+- **Calibration (T15):** on recorded real weeks, the expected activity wins: Zermatt in snow → skiing, Biarritz in a swell → surfing, London in rain → indoor, a mild sunny city → outdoor.
 - **Ranking:**
   - Activities are sorted descending with ranks 1 to 4, and ties are broken by best day.
   - The weekly score is the mean of the daily scores.
@@ -371,11 +389,11 @@ The tests that matter most:
   - Upstream failure with stale data serves it with `stale: true`.
   - Upstream failure with no data returns `UPSTREAM_UNAVAILABLE`.
   - Concurrent requests make exactly one upstream call.
-  - A marine failure still returns the other activities.
+  - A marine failure keeps the last good marine rows and still returns the other activities.
 - **Timezones:** "today" is computed in the location's timezone. For example, at 23:30 UTC it is already tomorrow in `Pacific/Auckland`.
 - **Upstream parsing:**
   - zod rejects malformed responses.
-  - Hourly `snow_depth` becomes a daily max.
+  - Snow depth in metres becomes centimetres.
   - Nulls are preserved.
 - **Input:**
   - Empty or too-long `place` returns `BAD_USER_INPUT`.
@@ -420,7 +438,7 @@ Coverage is a signal, not a goal. Expect high coverage in `scoring/` and `foreca
 | Risk | Mitigation |
 |------|------------|
 | Scoring thresholds feel arbitrary to reviewers | Every score returns reasons. Thresholds live in one place. The README calls them heuristics. |
-| Marine API behaviour inland is unclear | Day-1 spike. Surfing degrades on its own whatever the answer. |
+| Inland places have no marine data | Confirmed by the spike: they get all-null waves, so surfing scores 0 with a reason. |
 | Ambiguous geocoding gives a surprising city | The resolved location is echoed back. `countryCode` filter. |
 | Open-Meteo is down during the review demo | Stale fallback. Recorded fixtures for tests. Warm the database before the interview. |
 | Abuse burns the Open-Meteo quota and gets the server's IP blocked | Rate limit, alias limit and upstream cap (section 10). |

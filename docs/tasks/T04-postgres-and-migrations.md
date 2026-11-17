@@ -4,9 +4,9 @@ Day 1 · Size M (~2–3 h) · Depends on T03 · PRD §8
 
 **Goal:** The app connects to Postgres and creates its tables from SQL migration files.
 
-## Decide first
+## Decided
 
-- How marine data is stored, because it changes the first migration (see Open decisions on the [board](README.md)).
+- Marine data goes in its own table, `daily_marine`, with its own `marine_fetched_at` (docs/DECISIONS.md, D5). The schema in PRD §8 already shows this.
 
 ## Done when
 

@@ -2,7 +2,7 @@
 
 Day 1 · Size S · Depends on — · PRD §7
 
-Status: done on 2026-11-17 against the live API. PRD update pending.
+Status: done on 2026-11-17 against the live API. Results are in PRD §7 (v0.3).
 
 **Goal:** Answer the PRD's open questions about Open-Meteo before writing the clients.
 
@@ -38,4 +38,4 @@ Marine (`marine-api.open-meteo.com/v1/marine`):
 ## Done when
 
 - [x] The three questions in PRD §7 are answered.
-- [ ] PRD §7: the "Spike needed" list is replaced with these results, with a dated change-log note.
+- [x] PRD §7: the "Spike needed" list is replaced with these results, with a dated change-log note.

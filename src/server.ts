@@ -8,7 +8,18 @@ export interface AppOptions {
 }
 
 export function buildApp({ logger }: AppOptions): FastifyInstance {
-  const app = Fastify({ logger });
+  // Temporary (T06): log the proxy chain once on Light Cloud, to count the hops for trustProxy.
+  const app = Fastify({
+    logger: logger && {
+      serializers: {
+        req: (req: FastifyRequest) => ({
+          method: req.method,
+          url: req.url,
+          xff: req.headers['x-forwarded-for'],
+        }),
+      },
+    },
+  });
 
   app.get('/health', async () => ({ status: 'ok' }));
 

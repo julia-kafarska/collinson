@@ -1,3 +1,4 @@
+import { UPSTREAM_MESSAGES } from '../const/errors.js';
 import { UpstreamUnavailableError } from '../errors.js';
 import type { Fetch } from './http.js';
 
@@ -39,7 +40,7 @@ export function createUpstreamBudget({
         }
         if (counter.calls >= counter.cap) {
           throw new UpstreamUnavailableError(
-            `Open-Meteo budget of ${counter.cap} calls a ${counter.per} is used up`,
+            UPSTREAM_MESSAGES.budgetUsedUp(counter.cap, counter.per),
           );
         }
       }

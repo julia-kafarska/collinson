@@ -1,7 +1,9 @@
+import { USER_MESSAGES } from './const/errors.js';
+
 /** No place matched the query. Mapped to LOCATION_NOT_FOUND in the GraphQL layer. */
 export class LocationNotFoundError extends Error {
   constructor(place: string) {
-    super(`No location found for "${place}"`);
+    super(USER_MESSAGES.locationNotFound(place));
     this.name = 'LocationNotFoundError';
   }
 }

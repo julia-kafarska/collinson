@@ -1,3 +1,4 @@
+import { UPSTREAM_MESSAGES } from '../const/errors.js';
 import type { DailyWeather, ForecastDay, Location, MarineDay } from '../domain.js';
 import { LocationNotFoundError, UpstreamUnavailableError } from '../errors.js';
 import type { LocationRepo } from '../storage/location-repo.js';
@@ -125,9 +126,7 @@ export function createForecastService(deps: ForecastServiceDeps): ForecastServic
 
       const { forecast, marine, forecastFetchedAt } = stored;
       if (forecast.length === 0 || forecastFetchedAt === null) {
-        throw new UpstreamUnavailableError(
-          `No forecast is available for ${location.name} right now`,
-        );
+        throw new UpstreamUnavailableError(UPSTREAM_MESSAGES.noForecast(location.name));
       }
       const stillStale = staleSources(stored, today);
       const marineByDate = new Map(marine.map((day) => [day.date, day]));

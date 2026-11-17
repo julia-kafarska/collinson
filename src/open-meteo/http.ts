@@ -1,4 +1,5 @@
 import type { ZodType } from 'zod';
+import { UPSTREAM_MESSAGES } from '../const/errors.js';
 import { UpstreamUnavailableError } from '../errors.js';
 
 export type Fetch = typeof fetch;
@@ -23,25 +24,27 @@ export async function getJson<T>(fetchFn: Fetch, url: URL, schema: ZodType<T>): 
       continue;
     }
     if (response.status >= 500) {
-      lastError = new Error(`HTTP ${response.status}`);
+      lastError = new Error(UPSTREAM_MESSAGES.serverError(response.status));
       continue;
     }
     if (!response.ok) {
-      throw new UpstreamUnavailableError(`${url.host} answered HTTP ${response.status}`);
+      throw new UpstreamUnavailableError(UPSTREAM_MESSAGES.httpStatus(url.host, response.status));
     }
     let body: unknown;
     try {
       body = await response.json();
     } catch (error) {
-      throw new UpstreamUnavailableError(`${url.host} sent invalid JSON`, { cause: error });
+      throw new UpstreamUnavailableError(UPSTREAM_MESSAGES.invalidJson(url.host), { cause: error });
     }
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
-      throw new UpstreamUnavailableError(`${url.host} sent an unexpected response`, {
+      throw new UpstreamUnavailableError(UPSTREAM_MESSAGES.unexpectedResponse(url.host), {
         cause: parsed.error,
       });
     }
     return parsed.data;
   }
-  throw new UpstreamUnavailableError(`${url.host} is unreachable`, { cause: lastError });
+  throw new UpstreamUnavailableError(UPSTREAM_MESSAGES.hostUnreachable(url.host), {
+    cause: lastError,
+  });
 }

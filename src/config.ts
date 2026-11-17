@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { STARTUP_MESSAGES } from './const/errors.js';
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(8080),
@@ -11,7 +12,7 @@ export type Config = z.infer<typeof envSchema>;
 export function loadConfig(env: Record<string, string | undefined> = process.env): Config {
   const result = envSchema.safeParse(env);
   if (!result.success) {
-    throw new Error(`Invalid environment variables:\n${z.prettifyError(result.error)}`);
+    throw new Error(STARTUP_MESSAGES.invalidEnv(z.prettifyError(result.error)));
   }
   return result.data;
 }

@@ -10,3 +10,4 @@ docs/lead-snr-engineer-test-062026.docx
 
 # Claude Code agent worktrees
 .claude/
+.vitest/

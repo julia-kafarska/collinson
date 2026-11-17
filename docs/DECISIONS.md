@@ -59,3 +59,19 @@ Decisions in the order they were made. Each entry gives the decision, the option
 
 - **Decision:** install every planned dependency in the skeleton task, including the ones later tasks use.
 - **Why:** Independent tasks run in parallel on separate branches. One shared dependency set means no merge conflicts in `package.json` and the lockfile.
+
+## D11 · SSL to Light Cloud Postgres: libpq `require` semantics (2026-11-17)
+
+- **Decision:** `DATABASE_URL` on Light Cloud ends in `?uselibpqcompat=true&sslmode=require`. The connection is encrypted, but the server certificate is not verified.
+- **Options:** `sslmode=require` as given. node-postgres 8 treats that as `verify-full`, so the container crashed at startup with `UNABLE_TO_VERIFY_LEAF_SIGNATURE`. Or full verification, which needs the instance's private "Cloud SQL Server CA" certificate, and that certificate's CN doesn't match the hostname anyway.
+- **Why:** It is what `psql` does with `sslmode=require`, and node-postgres 9 makes it the default. The remaining risk is a man-in-the-middle between Light Cloud and the database. Using the database's private IP would remove it; this is listed as a limitation.
+
+## D12 · Postgres 15 everywhere, to match Light Cloud (2026-11-17)
+
+- **Decision:** local Docker and CI run Postgres 15, the version of Light Cloud's shared instance (15.19).
+- **Why:** Tests should run on the same major version as production. The schema uses nothing newer than 15.
+
+## D13 · Pool of 5 connections (2026-11-17)
+
+- **Decision:** keep the `pg` pool at 5.
+- **Why:** The shared instance limits our database role to 10 connections. With one app instance, 5 leaves room for migrations and manual access.

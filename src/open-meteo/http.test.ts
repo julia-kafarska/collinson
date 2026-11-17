@@ -36,6 +36,13 @@ describe('getJson', () => {
     await expect(getJson(fetch, url, schema)).resolves.toEqual({ value: 3 });
   });
 
+  it('does not retry a call refused before it was sent, e.g. by the call cap', async () => {
+    const refused = new UpstreamUnavailableError('Open-Meteo call budget used up');
+    const fetch = vi.fn<Fetch>().mockRejectedValue(refused);
+    await expect(getJson(fetch, url, schema)).rejects.toBe(refused);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
   it('gives up after two failed attempts', async () => {
     const fetch = vi.fn<Fetch>().mockResolvedValue(json({}, 502));
     await expect(getJson(fetch, url, schema)).rejects.toBeInstanceOf(UpstreamUnavailableError);

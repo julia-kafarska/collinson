@@ -24,3 +24,17 @@ The brief asks for AI to be used, and for the way of working to be visible. This
   - a blizzard would rank as the best ski day;
   - the indoor formula would beat skiing in ski resorts.
 - Lesson: assumptions about an external API are guesses until a real response has been checked.
+
+## Working with parallel agents (2026-11-17)
+
+- What worked: shared contracts first (`src/domain.ts`, `src/errors.ts`, `src/open-meteo/http.ts`, test helpers), then one agent per task with a strict list of files it may touch. Every merge was clean, because no two agents edited the same file.
+- Agents reported real findings rather than just code:
+  - geocoding sometimes has no timezone;
+  - `0.29 * 100` isn't exactly 29;
+  - snow depth rises on days without snowfall;
+  - a big 5.4 m swell still scores 53 with the PRD weights.
+  These went into the spike notes and the task files.
+- What went wrong:
+  - `npx prettier` picked up a global Prettier 2 through the shell wrapper and broke the lint. Agents switched to `./node_modules/.bin/prettier`.
+  - One agent's worktree started from an older commit, so it had to fast-forward to `main` first.
+  - The worktrees sit inside the repo folder, so ESLint scanned them until `.claude/` was ignored.

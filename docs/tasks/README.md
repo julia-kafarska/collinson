@@ -4,16 +4,15 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**36% done** · 51 of 138 checklist items · 7 of 21 tasks · updated 2026-11-17
+**53% done** · 74 of 138 checklist items · 11 of 21 tasks · updated 2026-11-17
 
-- **Live on Light Cloud:** https://main-collinson-prod-team.light-cloud.io (`/health`, `/graphql`), with a managed Postgres in the `prod-team` workspace (T06).
-- **Done:**
-  - T01 repo (pushed to the private `julia-kafarska/collinson`), T02 spike, T03 skeleton, T04 migrations;
-  - T07 geocoding, T08 forecast and marine clients, T11 scoring helpers and ranking. T07, T08 and T11 were built by parallel agents and merged.
-- **Now, in parallel:** T09 repositories, and T12, T13, T14 scorers.
+- **Live on Light Cloud:** https://main-collinson-prod-team.light-cloud.io, running Node 24.22.3 with Postgres 15.19 in the `prod-team` workspace.
+- **Done:** T01–T04, T07–T11 and T13 (surfing). T06 measured the proxy hops (D14) and the Node version.
+- **T16 is partly done:** the schema, the resolver, input validation and error mapping are tested. Wiring into the server waits for the scorers.
+- **Now, in parallel:** T12 skiing and T14 sightseeing scorers, T17 HTTP protection, T18 GraphQL limits and Open-Meteo call cap.
 - **Blocked:**
-  - T05: GitHub refuses to start Actions jobs: "recent account payments have failed or your spending limit needs to be increased". `npm run check` passes locally.
-  - T06: three small checks left (Postgres 15 locally, proxy hops, Node version).
+  - T05: GitHub Actions billing.
+  - T06: Postgres 15 locally and in CI, after the agents stop using the local database.
 
 ## How to work a task
 
@@ -32,19 +31,19 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 | [T03](T03-project-skeleton.md) | Project skeleton | 1 | M · 2–3 h | T01 | done |
 | [T04](T04-postgres-and-migrations.md) | Local Postgres and migrations | 1 | M · 2–3 h | T03 | done |
 | [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | blocked: GitHub Actions billing |
-| [T06](T06-light-cloud-skeleton.md) | Light Cloud walking skeleton | 1 | S · 1.5 h | T04, T05 | live, 3 checks left |
+| [T06](T06-light-cloud-skeleton.md) | Light Cloud walking skeleton | 1 | S · 1.5 h | T04, T05 | live, 1 check left (Postgres 15) |
 | [T07](T07-geocoding-client.md) | Geocoding client | 2 | S · 1 h | T03 | done |
 | [T08](T08-forecast-marine-clients.md) | Forecast and marine clients | 2 | M · 2–3 h | T03 | done |
-| [T09](T09-repositories.md) | Repositories | 2 | M · 2–3 h | T04 | in progress (agent) |
-| [T10](T10-forecast-service.md) | ForecastService: read-through refresh | 2 | M · 3–4 h | T07, T08, T09 | todo |
+| [T09](T09-repositories.md) | Repositories | 2 | M · 2–3 h | T04 | done |
+| [T10](T10-forecast-service.md) | ForecastService: read-through refresh | 2 | M · 3–4 h | T07, T08, T09 | done |
 | [T11](T11-scoring-foundation.md) | Scoring foundation and ranking | 3 | S · 1.5 h | T03 | done |
 | [T12](T12-skiing-scorer.md) | Skiing scorer | 3 | S · 1 h | T11 | in progress (agent) |
-| [T13](T13-surfing-scorer.md) | Surfing scorer | 3 | S · 1 h | T11 | in progress (agent) |
+| [T13](T13-surfing-scorer.md) | Surfing scorer | 3 | S · 1 h | T11 | done |
 | [T14](T14-sightseeing-scorers.md) | Outdoor and indoor sightseeing scorers | 3 | S · 1.5 h | T11 | in progress (agent) |
 | [T15](T15-ranking-calibration.md) | Ranking calibration with real weeks | 3 | S · 2 h | T08, T12, T13, T14 | todo |
-| [T16](T16-graphql-api.md) | GraphQL schema and resolver | 4 | M · 3 h | T10, T11–T14 | todo |
-| [T17](T17-http-protection.md) | HTTP protection | 4 | S · 1.5 h | T03, T06 | todo |
-| [T18](T18-query-limits-upstream-cap.md) | Query limits and upstream cap | 4 | S · 2 h | T07, T08, T16 | todo |
+| [T16](T16-graphql-api.md) | GraphQL schema and resolver | 4 | M · 3 h | T10, T11–T14 | partly done: resolver tested, server wiring next |
+| [T17](T17-http-protection.md) | HTTP protection | 4 | S · 1.5 h | T03, T06 | in progress (agent) |
+| [T18](T18-query-limits-upstream-cap.md) | Query limits and upstream cap | 4 | S · 2 h | T07, T08, T16 | in progress (agent) |
 | [T19](T19-bruno-and-curl.md) | Bruno collection and curl examples | 4 | S · 1 h | T16 | todo |
 | [T20](T20-readme-and-docs.md) | README and process docs | 5 | S · 2 h | T15–T19 | todo |
 | [T21](T21-release.md) | Release | 5 | S · 1 h | T20 | todo |

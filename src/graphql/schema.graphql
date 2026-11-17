@@ -1,0 +1,72 @@
+"""
+Ranks how good the next 7 days will be for skiing, surfing, outdoor and indoor sightseeing
+in a city or town, using Open-Meteo weather.
+"""
+type Query {
+  """
+  The activity ranking for a place. Errors carry `extensions.code`: BAD_USER_INPUT,
+  LOCATION_NOT_FOUND or UPSTREAM_UNAVAILABLE.
+  """
+  activityForecast(
+    "A city or town name, 1–100 characters, e.g. \"Zermatt\"."
+    place: String!
+    "Optional ISO 3166-1 alpha-2 country code to narrow the match, e.g. \"FR\"."
+    countryCode: String
+  ): ActivityForecast!
+}
+
+"The ranking for one place, and how fresh the weather behind it is."
+type ActivityForecast {
+  "The place the query resolved to, so the caller can check it was the one they meant."
+  location: Location!
+  "When the forecast was fetched from Open-Meteo (ISO 8601, UTC)."
+  fetchedAt: String!
+  "True when a refresh failed and older stored data is being served instead."
+  stale: Boolean!
+  "All four activities, best first."
+  activities: [ActivityRanking!]!
+}
+
+"A place resolved by Open-Meteo geocoding."
+type Location {
+  name: String!
+  country: String
+  "First-level region, e.g. a state or province."
+  region: String
+  latitude: Float!
+  longitude: Float!
+  "Metres above sea level."
+  elevation: Float
+  "IANA timezone. Dates in the ranking are local to it."
+  timezone: String!
+}
+
+enum Activity {
+  SKIING
+  SURFING
+  OUTDOOR_SIGHTSEEING
+  INDOOR_SIGHTSEEING
+}
+
+"One activity's ranking for the week."
+type ActivityRanking {
+  activity: Activity!
+  "1 is the best activity this week."
+  rank: Int!
+  "Weekly score from 0 to 100: the mean of the daily scores."
+  score: Int!
+  "The highest-scoring day (YYYY-MM-DD, local time), the earlier one on a tie."
+  bestDay: String
+  "One entry per day, from today, in date order."
+  days: [DayScore!]!
+}
+
+"How good one day is for an activity."
+type DayScore {
+  "YYYY-MM-DD in the place's local time."
+  date: String!
+  "From 0 (impossible) to 100 (perfect)."
+  score: Int!
+  "Human-readable factors behind the score, e.g. \"Fresh snow 12 cm\"."
+  reasons: [String!]!
+}

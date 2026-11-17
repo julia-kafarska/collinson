@@ -1,3 +1,4 @@
+import { SKIING_REASONS } from '../const/reasons.js';
 import { SKIING } from '../const/scoring.js';
 import { band } from './band.js';
 import { capScore, weightedScore } from './score.js';
@@ -17,14 +18,15 @@ export const scoreSkiing: Scorer = (day) => {
     {
       weight: weights.snowDepth,
       value: band(day.snowDepthMaxCm, bands.snowDepthCm),
-      reason: `Snow depth ${day.snowDepthMaxCm} cm`,
+      reason: SKIING_REASONS.snowDepth(day.snowDepthMaxCm),
     },
     {
       weight: weights.freshSnow,
       value: band(day.freshSnowCm, bands.freshSnowCm),
-      // "From yesterday", so a day with snow falling doesn't read as snowless (DECISIONS D6).
       reason:
-        day.freshSnowCm > 0 ? `Fresh snow ${day.freshSnowCm} cm` : 'No fresh snow from yesterday',
+        day.freshSnowCm > 0
+          ? SKIING_REASONS.freshSnow(day.freshSnowCm)
+          : SKIING_REASONS.noFreshSnow,
     },
     {
       weight: weights.tempMax,
@@ -34,12 +36,12 @@ export const scoreSkiing: Scorer = (day) => {
     {
       weight: weights.gusts,
       value: band(day.windGustsMaxKmh, bands.gustsKmh),
-      reason: `Gusts ${day.windGustsMaxKmh} km/h`,
+      reason: SKIING_REASONS.gusts(day.windGustsMaxKmh),
     },
     {
       weight: weights.weather,
       value: weatherQuality(day.weatherCode),
-      reason: `Weather: ${describeWeather(day.weatherCode)}`,
+      reason: SKIING_REASONS.weather(describeWeather(day.weatherCode)),
     },
   ];
   let score = weightedScore(factors.map(({ weight, value }) => [weight, value] as const));
@@ -49,22 +51,20 @@ export const scoreSkiing: Scorer = (day) => {
   if (day.snowDepthMaxCm < caps.thinSnow.belowCm) {
     score = capScore(score, caps.thinSnow.maxScore);
     capReasons.push(
-      day.snowDepthMaxCm > 0
-        ? `Thin snow: ${day.snowDepthMaxCm} cm, little to ski on`
-        : 'No snow on the ground',
+      day.snowDepthMaxCm > 0 ? SKIING_REASONS.thinSnow(day.snowDepthMaxCm) : SKIING_REASONS.noSnow,
     );
   }
   if (day.windGustsMaxKmh > caps.liftsClosed.aboveKmh) {
     score = capScore(score, caps.liftsClosed.maxScore);
-    capReasons.push(`Gusts ${day.windGustsMaxKmh} km/h: lifts likely closed`);
+    capReasons.push(SKIING_REASONS.liftsClosed(day.windGustsMaxKmh));
   }
   return { score, reasons: capReasons.length > 0 ? capReasons : explain(factors) };
 };
 
 function tempMaxReason(tempMaxC: number): string {
-  if (tempMaxC > bands.tempMaxC.idealMax) return `Max ${tempMaxC} °C: soft, slushy snow`;
-  if (tempMaxC < bands.tempMaxC.idealMin) return `Max ${tempMaxC} °C: very cold`;
-  return `Max ${tempMaxC} °C`;
+  if (tempMaxC > bands.tempMaxC.idealMax) return SKIING_REASONS.tempMaxSlushy(tempMaxC);
+  if (tempMaxC < bands.tempMaxC.idealMin) return SKIING_REASONS.tempMaxVeryCold(tempMaxC);
+  return SKIING_REASONS.tempMax(tempMaxC);
 }
 
 function explain(factors: Factor[]): string[] {

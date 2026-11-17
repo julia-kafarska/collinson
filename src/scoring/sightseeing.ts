@@ -1,3 +1,4 @@
+import { INDOOR_SIGHTSEEING_REASONS, OUTDOOR_SIGHTSEEING_REASONS } from '../const/reasons.js';
 import { INDOOR_SIGHTSEEING, MAX_SCORE, OUTDOOR_SIGHTSEEING } from '../const/scoring.js';
 import type { DailyWeather } from '../domain.js';
 import { band } from './band.js';
@@ -23,15 +24,15 @@ export const scoreOutdoorSightseeing: Scorer = (day) => {
     score,
     reasons: [
       conditions.thunderstorm
-        ? 'Thunderstorm: stay inside'
-        : `Weather: ${describeWeather(day.weatherCode)}`,
+        ? OUTDOOR_SIGHTSEEING_REASONS.thunderstorm
+        : OUTDOOR_SIGHTSEEING_REASONS.weather(describeWeather(day.weatherCode)),
       feelsLike(day),
       conditions.rain === 1
-        ? `Dry: ${day.precipitationProbabilityPct}% chance of rain`
-        : `${rainOutlook(day)}: ${rainFigures(day)}`,
+        ? OUTDOOR_SIGHTSEEING_REASONS.dry(day.precipitationProbabilityPct)
+        : OUTDOOR_SIGHTSEEING_REASONS.rain(rainOutlook(day), rainFigures(day)),
       conditions.polarNight
-        ? 'No daylight (polar night)'
-        : `Sun for ${Math.round(conditions.sunShare * 100)}% of daylight`,
+        ? OUTDOOR_SIGHTSEEING_REASONS.polarNight
+        : OUTDOOR_SIGHTSEEING_REASONS.sun(Math.round(conditions.sunShare * 100)),
       gusts(day),
     ],
   };
@@ -47,7 +48,7 @@ export const scoreIndoorSightseeing: Scorer = (day) => {
   const reasons = outdoor >= INDOOR_SIGHTSEEING.goodOutdoorScore ? [] : reasonsToStayIn(day);
   return {
     score: capScore(MAX_SCORE - outdoor, INDOOR_SIGHTSEEING.maxScore),
-    reasons: reasons.length > 0 ? reasons : ['Good weather outside: indoor sightseeing can wait'],
+    reasons: reasons.length > 0 ? reasons : [INDOOR_SIGHTSEEING_REASONS.goodWeather],
   };
 };
 
@@ -76,30 +77,32 @@ function assess(day: DailyWeather) {
 function reasonsToStayIn(day: DailyWeather): string[] {
   const conditions = assess(day);
   return [
-    conditions.thunderstorm && 'Thunderstorm outside',
-    conditions.rain < 1 && `${rainOutlook(day)} outdoors (${rainFigures(day)})`,
-    conditions.feelsLike < 1 && `${feelsLike(day)} outdoors`,
-    conditions.gusts < 1 && `${gusts(day)} outdoors`,
-    conditions.polarNight && 'No daylight outdoors (polar night)',
+    conditions.thunderstorm && INDOOR_SIGHTSEEING_REASONS.thunderstorm,
+    conditions.rain < 1 && INDOOR_SIGHTSEEING_REASONS.rain(rainOutlook(day), rainFigures(day)),
+    conditions.feelsLike < 1 && INDOOR_SIGHTSEEING_REASONS.outdoors(feelsLike(day)),
+    conditions.gusts < 1 && INDOOR_SIGHTSEEING_REASONS.outdoors(gusts(day)),
+    conditions.polarNight && INDOOR_SIGHTSEEING_REASONS.polarNight,
   ].filter((reason) => reason !== false);
 }
 
 function feelsLike(day: DailyWeather): string {
-  return `Feels like ${Math.round(day.apparentTempMaxC)} °C`;
+  return OUTDOOR_SIGHTSEEING_REASONS.feelsLike(Math.round(day.apparentTempMaxC));
 }
 
 function gusts(day: DailyWeather): string {
-  return `Gusts up to ${Math.round(day.windGustsMaxKmh)} km/h`;
+  return OUTDOOR_SIGHTSEEING_REASONS.gusts(Math.round(day.windGustsMaxKmh));
 }
 
 /** E.g. "Rain likely" or "Rain or snow possible". */
 function rainOutlook(day: DailyWeather): string {
   // Open-Meteo's precipitation includes snow, so a snowy day must not say only "rain".
-  const kind = day.snowfallCm > 0 ? 'Rain or snow' : 'Rain';
-  return `${kind} ${day.precipitationProbabilityPct >= rainLikelyPct ? 'likely' : 'possible'}`;
+  const { rain, rainOrSnow } = OUTDOOR_SIGHTSEEING_REASONS.rainOutlook;
+  const outlook = day.snowfallCm > 0 ? rainOrSnow : rain;
+  return day.precipitationProbabilityPct >= rainLikelyPct ? outlook.likely : outlook.possible;
 }
 
 /** E.g. "80%, 6.3 mm". */
 function rainFigures(day: DailyWeather): string {
-  return `${day.precipitationProbabilityPct}%, ${Math.round(day.precipitationMm * 10) / 10} mm`;
+  const mm = Math.round(day.precipitationMm * 10) / 10;
+  return OUTDOOR_SIGHTSEEING_REASONS.rainFigures(day.precipitationProbabilityPct, mm);
 }

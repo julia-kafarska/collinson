@@ -8,7 +8,7 @@ Day 4 · Size S (~1.5 h) · Depends on T03, T06 · PRD §10, FR9
 
 - [x] `@fastify/rate-limit` allows 60 requests per minute per client IP. Over the limit, it returns 429 with `Retry-After`. `/health` is exempt.
 - [x] Fastify's `bodyLimit` is 16 KB, and anything larger returns 413.
-- [ ] `trustProxy` is set to the hop count found in T06, not to `true`. `true` would trust an `X-Forwarded-For` header the client made up. `TRUSTED_PROXY_HOPS` is 1 until T06 measures the live hops.
+- [x] `trustProxy` trusts the 2 hops measured in T06 (D14), not `true`. `true` would trust an `X-Forwarded-For` header the client made up. Fastify 5.12 ignores a numeric `trustProxy`, so it's a function (`hop < TRUSTED_PROXY_HOPS`).
 - [x] The limits are passed in, so tests can use small numbers.
 - [x] Rejected requests are logged (PRD §11).
 

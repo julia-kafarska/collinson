@@ -1,11 +1,12 @@
 # PRD: Activity Weather Ranking Service
 
-Status: Draft v0.3 · 2026-11-17
+Status: Draft v0.4 · 2026-11-17
 Source brief: the recruiter's take-home brief. The file is kept out of git (docs/DECISIONS.md, D4); its requirements are summarised in sections 1 and 2.
 
 Change log:
 - v0.2 (2026-11-17): storage moved from SQLite to PostgreSQL, because the service will be deployed to Light Cloud, which provides managed Postgres. Added basic security (section 10) and the Light Cloud deployment (section 13).
 - v0.3 (2026-11-17): Open-Meteo spike results recorded (section 7). Daily `snow_depth_max` replaces the hourly aggregation. Marine data moved to its own table with its own fetch time (section 8). Fresh snow now counts the previous day's snowfall, and indoor sightseeing is `100 − outdoor` (section 9). Light Cloud platform facts added (section 13). See docs/DECISIONS.md, D4–D9.
+- v0.4 (2026-11-17): first deploy facts recorded (section 13). Light Cloud runs Postgres 15.19 and Node 24.22.3. The database connection needs libpq `sslmode=require` semantics. Requests reach the app through 2 trusted proxy hops. Local and CI moved to Postgres 15. See docs/DECISIONS.md, D11–D14.
 
 ## 1. Context
 
@@ -267,7 +268,7 @@ The API is public and read-only, and stores no user data. So the main risks are 
 | One client floods the API | Rate limit per client IP: 60 requests per minute (`@fastify/rate-limit`). Over the limit: HTTP 429 with `Retry-After`. |
 | One request asks for many cities at once using GraphQL aliases (`a: activityForecast(...) b: activityForecast(...)`) | GraphQL Armor: at most 3 aliases, depth 6, 1,000 tokens. Batching stays off. A request can resolve at most 4 places. |
 | Many clients together exhaust the Open-Meteo free tier (600 calls/min, 10,000/day) | A cap on our own upstream calls at half of that: 300/min and 5,000/day. Over the cap: serve stale data, or `UPSTREAM_UNAVAILABLE` if there is none. |
-| Faked client IPs to dodge the rate limit | `trustProxy` set to Light Cloud's real number of proxy hops (checked on the first deploy), so a client can't spoof `X-Forwarded-For`. |
+| Faked client IPs to dodge the rate limit | `trustProxy` trusts Light Cloud's 2 measured proxy hops (D14), so a client can't spoof `X-Forwarded-For`. |
 | Huge request bodies | Body limit of 16 KB (Fastify `bodyLimit`). Real queries are well under 1 KB. |
 | Bad input | Validated in the resolver: `place` 1–100 characters after trimming, `countryCode` matches `^[A-Z]{2}$`. Open-Meteo URLs are built with `URLSearchParams`. |
 | SQL injection | Parameterised queries only (`$1`, `$2`). SQL is never built from strings. |
@@ -334,12 +335,13 @@ docker-compose.yml   local PostgreSQL
 - **Scaling:** `max_instances: 1`. The rate limits, the upstream cap and single-flight live in memory, which is only correct with one instance. `min_instances: 1` during the review window, so the first request isn't a cold start; 0 otherwise.
 - **Config:** `DATABASE_URL` is Light Cloud's connection string for the database, set as an environment variable on the app. It is a secret, so it never appears in the repo, logs or docs.
 - **Plan:** Light Cloud databases need a paid plan. Lite includes one shared database; Free has none.
-- **Check on the first deploy:**
-  - the Postgres major version, so `docker-compose.yml` can use the same one;
-  - the connection limit of the shared tier, which sets the pool size;
-  - whether the connection string requires SSL;
-  - how many proxies add to `X-Forwarded-For`, which sets `trustProxy` (section 10);
-  - which Node version the runtime uses, to match `engines`.
+- **Checked on the first deploy (2026-11-17):**
+  - Postgres 15.19, so local and CI run 15 too (D12);
+  - the shared tier allows 10 connections per role, so the pool stays at 5 (D13);
+  - SSL is required. node-postgres needs `uselibpqcompat=true&sslmode=require` in `DATABASE_URL`, because Cloud SQL's certificate comes from a private CA (D11);
+  - requests come through Cloudflare and Cloud Run's proxy: 2 trusted hops (D14);
+  - Node v24.22.3, which matches `engines: 24.x`.
+- **Live:** https://main-collinson-prod-team.light-cloud.io in the `prod-team` workspace (app `collinson`, database `collinson-weather-db`).
 - **Demo:** the README links the live URL, so reviewers can use GraphiQL without cloning anything.
 
 ## 14. Engineering approach

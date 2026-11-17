@@ -1,7 +1,7 @@
-# Local PostgreSQL only; the app runs with `npm run dev`.
+# Local PostgreSQL only; the app runs with `npm run dev`. Version 15 matches Light Cloud (D12).
 services:
   db:
-    image: postgres:18-alpine
+    image: postgres:15-alpine
     environment:
       POSTGRES_USER: weather
       POSTGRES_PASSWORD: weather
@@ -9,7 +9,7 @@ services:
     ports:
       - '5433:5432'
     volumes:
-      - pgdata:/var/lib/postgresql
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U weather']
       interval: 2s

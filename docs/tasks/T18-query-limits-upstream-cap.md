@@ -6,10 +6,10 @@ Day 4 · Size S (~2 h) · Depends on T07, T08, T16 · PRD §10
 
 ## Done when
 
-- [ ] GraphQL Armor on Yoga: at most 3 aliases, depth 6, 1,000 tokens. Batching is off. *(`graphqlLimitPlugins()` in `src/graphql/limits.ts` is done and tested; still to do: pass it to `createYoga` in `src/server.ts`.)*
+- [x] GraphQL Armor on Yoga: at most 3 aliases, depth 6, 1,000 tokens. Batching is off. Wired in `createGraphQL`; live, a 4-alias query gets "Aliases limit of 3 exceeded".
 - [x] GraphiQL's introspection query still passes these limits.
-- [ ] `src/open-meteo/budget.ts` counts upstream calls per minute and per day, and caps them at 300 per minute and 5,000 per day. It is checked before every Open-Meteo request: geocoding, forecast and marine. *(Counting and caps are done; still to do: wrap the one fetch that the three clients share.)*
-- [ ] Over the cap, no request is sent, and ForecastService serves stale data or `UPSTREAM_UNAVAILABLE`. *(No request is sent and the call throws `UpstreamUnavailableError`; still to do: the ForecastService side, in T10.)*
+- [x] `src/open-meteo/budget.ts` counts upstream calls per minute and per day, and caps them at 300 per minute and 5,000 per day. It is checked before every Open-Meteo request: `buildApp` wraps the one fetch that geocoding, forecast and marine share.
+- [x] Over the cap, no request is sent, and ForecastService serves stale data or `UPSTREAM_UNAVAILABLE`. A refused call is not retried (`getJson`), and ForecastService treats it like any failed refresh.
 - [x] The counters live in memory (one instance, PRD §13), with a code comment stating the limit: `shortcut: in-memory counters, correct for one instance; move to Postgres or Redis before scaling out`.
 
 ## Tests first

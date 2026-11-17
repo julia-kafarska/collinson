@@ -17,6 +17,8 @@ export async function getJson<T>(fetchFn: Fetch, url: URL, schema: ZodType<T>): 
     try {
       response = await fetchFn(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
     } catch (error) {
+      // Refused before it was sent (the call cap), so a retry would only be refused again.
+      if (error instanceof UpstreamUnavailableError) throw error;
       lastError = error;
       continue;
     }

@@ -14,7 +14,7 @@ Day 1 · Size S (~30 min) · Depends on — · PRD §14, §17
 - [x] `docs/DECISIONS.md` started. First entries: TypeScript on Node 24, PostgreSQL on Light Cloud, Fastify under Yoga. Each entry gives the decision, the options considered and why this one won.
 - [x] `docs/AI-NOTES.md` started: which AI tools are used, and for what.
 - [x] First commit with `docs/` (PRD and tasks).
-- [ ] Private GitHub repo created and pushed. It goes public in T21. **Waiting for approval:** creating a repo on GitHub is an outside action.
+- [x] Private GitHub repo pushed: `julia-kafarska/collinson`, which already existed. It goes public in T21.
 
 ## Notes
 

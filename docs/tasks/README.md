@@ -4,12 +4,16 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**17% done** · 24 of 138 checklist items · 4 of 21 tasks · updated 2026-11-17
+**36% done** · 51 of 138 checklist items · 7 of 21 tasks · updated 2026-11-17
 
-- Done: T02 spike, T03 skeleton (Fastify + Yoga on `0.0.0.0:8080`; Light Cloud's detector recognises it), T04 Postgres 18 and migrations. T01 and T05 are done locally.
-- Shared code written before the parallel work: domain types (`src/domain.ts`), errors (`src/errors.ts`) and the Open-Meteo HTTP helper with timeout and retry (`src/open-meteo/http.ts`).
-- Now, in parallel on separate branches: T07 geocoding, T08 forecast and marine, T09 repositories, T11 scoring foundation.
-- Waiting for approval: creating the private GitHub repo (T01, T05) and the Light Cloud plan with a database (T06).
+- **Live on Light Cloud:** https://main-collinson-prod-team.light-cloud.io (`/health`, `/graphql`), with a managed Postgres in the `prod-team` workspace (T06).
+- **Done:**
+  - T01 repo (pushed to the private `julia-kafarska/collinson`), T02 spike, T03 skeleton, T04 migrations;
+  - T07 geocoding, T08 forecast and marine clients, T11 scoring helpers and ranking. T07, T08 and T11 were built by parallel agents and merged.
+- **Now, in parallel:** T09 repositories, and T12, T13, T14 scorers.
+- **Blocked:**
+  - T05: GitHub refuses to start Actions jobs: "recent account payments have failed or your spending limit needs to be increased". `npm run check` passes locally.
+  - T06: three small checks left (Postgres 15 locally, proxy hops, Node version).
 
 ## How to work a task
 
@@ -23,20 +27,20 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 | ID | Task | Day | Size | Depends on | Status |
 |----|------|-----|------|------------|--------|
-| [T01](T01-repo-setup.md) | Repo setup and hygiene | 1 | S · 30 min | — | done locally, GitHub push waiting |
+| [T01](T01-repo-setup.md) | Repo setup and hygiene | 1 | S · 30 min | — | done |
 | [T02](T02-open-meteo-spike.md) | Open-Meteo spike | 1 | S | — | done |
 | [T03](T03-project-skeleton.md) | Project skeleton | 1 | M · 2–3 h | T01 | done |
 | [T04](T04-postgres-and-migrations.md) | Local Postgres and migrations | 1 | M · 2–3 h | T03 | done |
-| [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | done locally, first GitHub run waiting |
-| [T06](T06-light-cloud-skeleton.md) | Light Cloud walking skeleton | 1 | S · 1.5 h | T04, T05 | todo |
-| [T07](T07-geocoding-client.md) | Geocoding client | 2 | S · 1 h | T03 | in progress (agent) |
-| [T08](T08-forecast-marine-clients.md) | Forecast and marine clients | 2 | M · 2–3 h | T03 | in progress (agent) |
+| [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | blocked: GitHub Actions billing |
+| [T06](T06-light-cloud-skeleton.md) | Light Cloud walking skeleton | 1 | S · 1.5 h | T04, T05 | live, 3 checks left |
+| [T07](T07-geocoding-client.md) | Geocoding client | 2 | S · 1 h | T03 | done |
+| [T08](T08-forecast-marine-clients.md) | Forecast and marine clients | 2 | M · 2–3 h | T03 | done |
 | [T09](T09-repositories.md) | Repositories | 2 | M · 2–3 h | T04 | in progress (agent) |
 | [T10](T10-forecast-service.md) | ForecastService: read-through refresh | 2 | M · 3–4 h | T07, T08, T09 | todo |
-| [T11](T11-scoring-foundation.md) | Scoring foundation and ranking | 3 | S · 1.5 h | T03 | in progress (agent) |
-| [T12](T12-skiing-scorer.md) | Skiing scorer | 3 | S · 1 h | T11 | todo |
-| [T13](T13-surfing-scorer.md) | Surfing scorer | 3 | S · 1 h | T11 | todo |
-| [T14](T14-sightseeing-scorers.md) | Outdoor and indoor sightseeing scorers | 3 | S · 1.5 h | T11 | todo |
+| [T11](T11-scoring-foundation.md) | Scoring foundation and ranking | 3 | S · 1.5 h | T03 | done |
+| [T12](T12-skiing-scorer.md) | Skiing scorer | 3 | S · 1 h | T11 | in progress (agent) |
+| [T13](T13-surfing-scorer.md) | Surfing scorer | 3 | S · 1 h | T11 | in progress (agent) |
+| [T14](T14-sightseeing-scorers.md) | Outdoor and indoor sightseeing scorers | 3 | S · 1.5 h | T11 | in progress (agent) |
 | [T15](T15-ranking-calibration.md) | Ranking calibration with real weeks | 3 | S · 2 h | T08, T12, T13, T14 | todo |
 | [T16](T16-graphql-api.md) | GraphQL schema and resolver | 4 | M · 3 h | T10, T11–T14 | todo |
 | [T17](T17-http-protection.md) | HTTP protection | 4 | S · 1.5 h | T03, T06 | todo |
@@ -60,7 +64,7 @@ Each decision is recorded in [`docs/DECISIONS.md`](../DECISIONS.md), and the PRD
 
 | Decision | Blocks | Outcome |
 |----------|--------|---------|
-| Light Cloud plan. Databases need a paid plan: Lite includes one shared database, Free has none. | T06 | **Waiting for approval.** It costs money. |
+| Light Cloud workspace and plan. | T06 | `prod-team`, already on the paid Starter plan. |
 | Publish the brief `.docx`? Its metadata names two of the company's staff, and the file is their assessment. | T01 | Kept out of git (D4). |
 | How a Marine API failure is stored. | T04, T09, T10 | Marine data in its own table with its own fetch time (D5). |
 | Same-day or previous-day fresh snow. | T08, T12 | The previous day's snowfall, via `past_days=1` (D6). |

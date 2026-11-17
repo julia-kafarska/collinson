@@ -28,6 +28,14 @@ Marine (`marine-api.open-meteo.com/v1/marine`):
 - Inland places (Madrid, Zermatt, London) get HTTP 200 with every wave value `null`.
 - Coastal towns snap to a nearby sea cell and get data: Biarritz, Hossegor, Newquay, Nazaré, Ericeira, Malibu, Honolulu.
 
+## Found later, while building T07 and T08
+
+- Geocoding leaves out keys it has no value for: `country` and `admin1` for places like Antarctica, `elevation` for some US places. The client maps them to `null`.
+- Geocoding can also leave out `timezone` (e.g. "Gibraltar Range National Park"). No top match without one was found, but such a match would surface as `UPSTREAM_UNAVAILABLE`. This is a known limitation.
+- An elevation of `-9999` is a "no data" placeholder. It is only echoed back to the client, never used in scoring.
+- Snow depth can rise on a day with no reported snowfall (Zermatt: 0.01 m to 0.35 m on 19 November with `snowfall_sum` 0). The models disagree with each other, so T15 must not expect them to agree.
+- Floating point: `0.29 * 100 = 28.999999999999996`, so the cm conversion rounds to 0.1 cm.
+
 ## What this changes
 
 - T07: a missing `results` key means "not found".

@@ -6,11 +6,11 @@ Day 2 · Size S (~1 h) · Depends on T03 · PRD §7, §10, FR1, FR2
 
 ## Done when
 
-- [ ] The URL is built with `URLSearchParams`: `name`, `count=1`, `language=en`, `format=json`, and `countryCode` when given.
-- [ ] The response is parsed with zod. `results` is optional, and a missing key means "not found" (T02).
-- [ ] It returns `{ id, name, country, region, latitude, longitude, elevation, timezone }`, with `region` taken from `admin1`.
-- [ ] 5 s timeout and one retry on network errors and 5xx. Any other failure throws `UpstreamUnavailableError`.
-- [ ] `fetch` is passed in.
+- [x] The URL is built with `URLSearchParams`: `name`, `count=1`, `language=en`, `format=json`, and `countryCode` when given.
+- [x] The response is parsed with zod. `results` is optional, and a missing key means "not found" (T02).
+- [x] It returns `{ id, name, country, region, latitude, longitude, elevation, timezone }`, with `region` taken from `admin1`. Elevation is `elevationM`, as named in `src/domain.ts`.
+- [x] 5 s timeout and one retry on network errors and 5xx. Any other failure throws `UpstreamUnavailableError`. `getJson` (`src/open-meteo/http.ts`) does this; the geocoding tests cover the 503 retry and malformed JSON.
+- [x] `fetch` is passed in.
 
 ## Tests first
 

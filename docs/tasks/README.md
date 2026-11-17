@@ -4,12 +4,11 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**94% done** · 137 of 145 checklist items · 20 of 22 tasks · updated 2026-11-17
+**97% done** · 141 of 145 checklist items · 21 of 22 tasks · updated 2026-11-17
 
-- **Public repo:** https://github.com/julia-kafarska/collinson. CI is green (typecheck, lint, 177 tests on Postgres 15, `npm audit`).
-- **Live:** https://main-collinson-prod-team.light-cloud.io/graphql. The Bruno collection passes against it (7 requests, 23/23 assertions).
-- **Done:** T01–T20. T15 calibrated the scoring on four real weeks and a survey of 51, adding three caps (D16–D18).
-- **Now:** T22 part B, an agent moving the scoring weights, bands, caps and reason texts into `src/const/`.
+- **Public repo:** https://github.com/julia-kafarska/collinson. CI is green on every push.
+- **Live:** https://main-collinson-prod-team.light-cloud.io/graphql. The Bruno collection passes against it (23/23).
+- **Done:** T01–T20 and T22. Every hardcoded text and limit is in `src/const/` (D15).
 - **T21, left for you:**
   - tell the recruiter (repo plus live URL);
   - optionally keep one instance warm (`min_instances: 1`) for the review window;
@@ -48,7 +47,7 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 | [T19](T19-bruno-and-curl.md) | Bruno collection and curl examples | 4 | S · 1 h | T16 | done |
 | [T20](T20-readme-and-docs.md) | README and process docs | 5 | S · 2 h | T15–T19 | done |
 | [T21](T21-release.md) | Release | 5 | S · 1 h | T20 | mostly done: telling the recruiter and the warm-up are yours |
-| [T22](T22-constants-folder.md) | Hardcoded constants in `src/const` | 5 | M · 2 h | T15 (part B) | part A merged; part B in progress (agent) |
+| [T22](T22-constants-folder.md) | Hardcoded constants in `src/const` | 5 | M · 2 h | T15 (part B) | done |
 
 Sizes: S is up to 2 hours, M is 2–4 hours.
 

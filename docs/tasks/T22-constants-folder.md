@@ -41,5 +41,5 @@ Part B (`src/scoring/`, after T15 merges):
 
 Both:
 
-- [ ] `npm run check` passes with no behaviour change. The live Bruno collection still passes after deploy.
-- [ ] PRD §12 (folder layout) and §14 (where constants live) are updated.
+- [x] `npm run check` passes with no behaviour change (177 tests). The live Bruno collection still passes after deploy (23/23), and the live rankings for the calibration places are unchanged.
+- [x] PRD §12 (folder layout) and §14 (where constants live) are updated.

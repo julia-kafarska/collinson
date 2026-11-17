@@ -52,6 +52,9 @@ const RAIN_LIKELY_PCT = 50;
 // Ideal feels-like, rain and gusts alone score 75, so a lower score always has a reason to list.
 const GOOD_OUTDOOR_SCORE = 75;
 
+// A fallback, not a highlight: an outdoor day whose main conditions are right scores 65+ and wins.
+const INDOOR_MAX_SCORE = 65;
+
 /** Outdoor sightseeing (PRD §9): mild, dry, sunny and calm is best. */
 export const scoreOutdoorSightseeing: Scorer = (day) => {
   const conditions = assess(day);
@@ -80,12 +83,16 @@ export const scoreOutdoorSightseeing: Scorer = (day) => {
   };
 };
 
-/** Indoor sightseeing is the fallback when outdoors is poor: 100 − outdoor (DECISIONS D7). */
+/**
+ * Indoor sightseeing is the fallback when outdoors is poor: 100 − outdoor (DECISIONS D7), at most
+ * 65. The cap never changes which sightseeing wins a day, since it only bites when outdoors is
+ * under 35, but a storm day no longer outweighs the good ski or surf days around it (T15).
+ */
 export const scoreIndoorSightseeing: Scorer = (day) => {
   const outdoor = scoreOutdoorSightseeing(day).score;
   const reasons = outdoor >= GOOD_OUTDOOR_SCORE ? [] : reasonsToStayIn(day);
   return {
-    score: MAX_SCORE - outdoor,
+    score: capScore(MAX_SCORE - outdoor, INDOOR_MAX_SCORE),
     reasons: reasons.length > 0 ? reasons : ['Good weather outside: indoor sightseeing can wait'],
   };
 };

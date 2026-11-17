@@ -113,11 +113,19 @@ describe('scoreOutdoorSightseeing', () => {
 });
 
 describe('scoreIndoorSightseeing', () => {
-  it('is 100 − outdoor, so it moves the opposite way', () => {
+  it('is 100 − outdoor, at most 65, so it moves the opposite way', () => {
     for (const weather of DAYS) {
       expect(scoreIndoorSightseeing(weather).score).toBe(
-        100 - scoreOutdoorSightseeing(weather).score,
+        Math.min(100 - scoreOutdoorSightseeing(weather).score, 65),
       );
+    }
+  });
+
+  it('caps the worst day at 65, yet still beats outdoors whenever outdoors scores under 50', () => {
+    expect(scoreIndoorSightseeing(THUNDERSTORM).score).toBe(65);
+    for (const weather of DAYS) {
+      const outdoor = scoreOutdoorSightseeing(weather).score;
+      if (outdoor < 50) expect(scoreIndoorSightseeing(weather).score).toBeGreaterThan(outdoor);
     }
   });
 

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.env
+.idea/
+.DS_Store
+
+# The recruiter's brief stays private (docs/DECISIONS.md, D4)
+docs/lead-snr-engineer-test-062026.docx

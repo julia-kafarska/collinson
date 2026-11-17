@@ -4,7 +4,7 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**97% done** · 141 of 145 checklist items · 21 of 22 tasks · updated 2026-11-17
+**97% done** · 142 of 145 checklist items · 21 of 22 tasks · updated 2026-11-17
 
 - **Public repo:** https://github.com/julia-kafarska/collinson. CI is green on every push.
 - **Live:** https://main-collinson-prod-team.light-cloud.io/graphql. The Bruno collection passes against it (23/23).

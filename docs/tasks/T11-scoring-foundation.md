@@ -8,7 +8,7 @@ Day 3, can start any time after T03 · Size S (~1.5 h) · Depends on T03 · PRD 
 
 - [x] A `DailyWeather` type in PRD units, with marine fields typed `number | null`. Already in `src/domain.ts`, written with the shared types before the parallel tasks.
 - [x] `band(value, { zeroBelow, idealMin, idealMax, zeroAbove })` returns 0–1: 1 inside the ideal range, 0 at and beyond the limits, linear in between.
-- [ ] A scorer type, `(day) => { score: number; reasons: string[] }`, and a single list of scorers keyed by `Activity`. The `Scorer` type is in `src/scoring/types.ts`. The list waits for T12–T14; until then `rankActivities` takes the scorers as a parameter.
+- [x] A scorer type, `(day) => { score: number; reasons: string[] }`, and a single list of scorers keyed by `Activity`. The list is `SCORERS` in `src/scoring/scorers.ts`, wired after T12–T14 merged.
 - [x] `rankActivities(days, scorers)` scores every day, then:
   - [x] the weekly score is the rounded mean of the daily scores (0 with no days);
   - [x] `bestDay` is the highest-scoring day, taking the earlier date on a tie (`null` with no days);

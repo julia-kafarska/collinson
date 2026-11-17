@@ -6,9 +6,9 @@ Day 1 · Size S (~45 min) · Depends on T04 · PRD §10, §14
 
 ## Done when
 
-- [ ] `.github/workflows/ci.yml` uses the Node version from `.nvmrc`, then runs `npm ci`, `npm run check`, and `npm audit --omit=dev --audit-level=high`.
-- [ ] A Postgres service container is available, with `DATABASE_URL` pointing at it.
-- [ ] The first run is green on GitHub.
+- [x] `.github/workflows/ci.yml` uses the Node version from `.nvmrc`, then runs `npm ci`, `npm run check`, and `npm audit --omit=dev --audit-level=high`.
+- [x] A Postgres service container is available, with `DATABASE_URL` pointing at it.
+- [ ] The first run is green on GitHub. **Waiting:** needs the GitHub repo (T01). `npm audit` already passes locally with 0 vulnerabilities.
 
 ## Notes
 

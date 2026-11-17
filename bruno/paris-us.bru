@@ -1,0 +1,36 @@
+meta {
+  name: Paris, US (Texas)
+  type: graphql
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query ActivityForecast($place: String!, $countryCode: String) {
+    activityForecast(place: $place, countryCode: $countryCode) {
+      location { name country region latitude longitude elevation timezone }
+      fetchedAt
+      stale
+      activities { activity rank score bestDay days { date score reasons } }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "place": "Paris",
+    "countryCode": "US"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.errors: isUndefined
+  res.body.data.activityForecast.location.name: eq Paris
+  res.body.data.activityForecast.location.region: eq Texas
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Four aliases (rejected)
+  type: graphql
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query FourPlaces($a: String!, $b: String!, $c: String!, $d: String!) {
+    a: activityForecast(place: $a) { stale }
+    b: activityForecast(place: $b) { stale }
+    c: activityForecast(place: $c) { stale }
+    d: activityForecast(place: $d) { stale }
+  }
+}
+
+body:graphql:vars {
+  {
+    "a": "Zermatt",
+    "b": "Biarritz",
+    "c": "Madrid",
+    "d": "Paris"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.errors[0].message: contains Aliases limit of 3 exceeded
+  res.body.data: isUndefined
+}

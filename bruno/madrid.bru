@@ -1,0 +1,44 @@
+meta {
+  name: Madrid (inland, no surfing)
+  type: graphql
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/graphql
+  body: graphql
+  auth: none
+}
+
+body:graphql {
+  query ActivityForecast($place: String!, $countryCode: String) {
+    activityForecast(place: $place, countryCode: $countryCode) {
+      location { name country region latitude longitude elevation timezone }
+      fetchedAt
+      stale
+      activities { activity rank score bestDay days { date score reasons } }
+    }
+  }
+}
+
+body:graphql:vars {
+  {
+    "place": "Madrid"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.errors: isUndefined
+  res.body.data.activityForecast.location.name: eq Madrid
+}
+
+tests {
+  test('SURFING scores 0, because the Marine API has no waves inland', function () {
+    const { activities } = res.body.data.activityForecast;
+    const surfing = activities.find((a) => a.activity === 'SURFING');
+    expect(surfing).to.be.an('object');
+    expect(surfing.score).to.equal(0);
+    expect(surfing.days[0].reasons).to.include('No marine data for this location');
+  });
+}

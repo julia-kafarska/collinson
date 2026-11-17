@@ -31,8 +31,8 @@ Requested on 2026-11-17, after the code was written. See docs/DECISIONS.md, D15.
 
 Part A (everything outside `src/scoring/`):
 
-- [ ] `errors.ts`, `limits.ts`, `open-meteo.ts`, `server.ts` and `log-messages.ts` exist, and every use outside `src/scoring/` imports from them.
-- [ ] No user-facing string, URL or numeric limit is left inline outside `src/const/` and `src/scoring/`.
+- [x] `errors.ts`, `limits.ts`, `open-meteo.ts`, `server.ts` and `log-messages.ts` exist, and every use outside `src/scoring/` imports from them.
+- [x] No user-facing string, URL or numeric limit is left inline outside `src/const/` and `src/scoring/`.
 
 Part B (`src/scoring/`, after T15 merges):
 

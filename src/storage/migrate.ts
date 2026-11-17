@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import type { Pool } from 'pg';
+import { STARTUP_MESSAGES } from '../const/errors.js';
 
 // Resolves to <repo>/migrations from both src/storage and dist/storage.
 const MIGRATIONS_DIR = new URL('../../migrations/', import.meta.url);
@@ -27,7 +28,7 @@ export async function migrate(pool: Pool, dir: URL = MIGRATIONS_DIR): Promise<st
       await client.query('COMMIT');
     } catch (error) {
       await client.query('ROLLBACK');
-      throw new Error(`Migration ${file} failed`, { cause: error });
+      throw new Error(STARTUP_MESSAGES.migrationFailed(file), { cause: error });
     } finally {
       client.release();
     }

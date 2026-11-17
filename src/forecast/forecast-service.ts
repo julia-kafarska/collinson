@@ -1,10 +1,11 @@
+import { UPSTREAM_MESSAGES } from '../const/errors.js';
+import { LOG_MESSAGES } from '../const/log-messages.js';
+import { FORECAST_DAYS } from '../const/open-meteo.js';
 import type { DailyWeather, ForecastDay, Location, MarineDay } from '../domain.js';
 import { LocationNotFoundError, UpstreamUnavailableError } from '../errors.js';
 import type { LocationRepo } from '../storage/location-repo.js';
 import type { StoredWeather, WeatherRepo } from '../storage/weather-repo.js';
 import { addDays, localDate } from './dates.js';
-
-export const FORECAST_DAYS = 7;
 
 export interface Logger {
   info(details: object, message: string): void;
@@ -89,11 +90,11 @@ export function createForecastService(deps: ForecastServiceDeps): ForecastServic
       }
       log.info(
         { source, locationId: location.id, ms: Math.round(performance.now() - started) },
-        'refreshed',
+        LOG_MESSAGES.refreshed,
       );
     } catch (error) {
       // The caller re-reads the stored rows and serves them as stale (FR6, FR7).
-      log.warn({ source, locationId: location.id, err: error }, 'refresh failed');
+      log.warn({ source, locationId: location.id, err: error }, LOG_MESSAGES.refreshFailed);
     }
   }
 
@@ -116,7 +117,7 @@ export function createForecastService(deps: ForecastServiceDeps): ForecastServic
       const stale = staleSources(stored, today);
       log.info(
         { locationId: location.id, refresh: stale },
-        stale.length ? 'cache miss' : 'cache hit',
+        stale.length ? LOG_MESSAGES.cacheMiss : LOG_MESSAGES.cacheHit,
       );
       if (stale.length > 0) {
         await refreshOnce(location, stale);
@@ -125,9 +126,7 @@ export function createForecastService(deps: ForecastServiceDeps): ForecastServic
 
       const { forecast, marine, forecastFetchedAt } = stored;
       if (forecast.length === 0 || forecastFetchedAt === null) {
-        throw new UpstreamUnavailableError(
-          `No forecast is available for ${location.name} right now`,
-        );
+        throw new UpstreamUnavailableError(UPSTREAM_MESSAGES.noForecast(location.name));
       }
       const stillStale = staleSources(stored, today);
       const marineByDate = new Map(marine.map((day) => [day.date, day]));

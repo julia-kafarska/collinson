@@ -4,10 +4,11 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**4% done** · 6 of 138 checklist items · 1 of 21 tasks · updated 2026-11-17
+**17% done** · 24 of 138 checklist items · 4 of 21 tasks · updated 2026-11-17
 
-- Done: T02 Open-Meteo spike (results in PRD §7). T01 is done locally: `.gitignore`, the decision log (D1–D10) and the AI notes, plus the first commit.
-- Now: T03 project skeleton.
+- Done: T02 spike, T03 skeleton (Fastify + Yoga on `0.0.0.0:8080`; Light Cloud's detector recognises it), T04 Postgres 18 and migrations. T01 and T05 are done locally.
+- Shared code written before the parallel work: domain types (`src/domain.ts`), errors (`src/errors.ts`) and the Open-Meteo HTTP helper with timeout and retry (`src/open-meteo/http.ts`).
+- Now, in parallel on separate branches: T07 geocoding, T08 forecast and marine, T09 repositories, T11 scoring foundation.
 - Waiting for approval: creating the private GitHub repo (T01, T05) and the Light Cloud plan with a database (T06).
 
 ## How to work a task
@@ -24,15 +25,15 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 |----|------|-----|------|------------|--------|
 | [T01](T01-repo-setup.md) | Repo setup and hygiene | 1 | S · 30 min | — | done locally, GitHub push waiting |
 | [T02](T02-open-meteo-spike.md) | Open-Meteo spike | 1 | S | — | done |
-| [T03](T03-project-skeleton.md) | Project skeleton | 1 | M · 2–3 h | T01 | todo |
-| [T04](T04-postgres-and-migrations.md) | Local Postgres and migrations | 1 | M · 2–3 h | T03 | todo |
-| [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | todo |
+| [T03](T03-project-skeleton.md) | Project skeleton | 1 | M · 2–3 h | T01 | done |
+| [T04](T04-postgres-and-migrations.md) | Local Postgres and migrations | 1 | M · 2–3 h | T03 | done |
+| [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | done locally, first GitHub run waiting |
 | [T06](T06-light-cloud-skeleton.md) | Light Cloud walking skeleton | 1 | S · 1.5 h | T04, T05 | todo |
-| [T07](T07-geocoding-client.md) | Geocoding client | 2 | S · 1 h | T03 | todo |
-| [T08](T08-forecast-marine-clients.md) | Forecast and marine clients | 2 | M · 2–3 h | T03 | todo |
-| [T09](T09-repositories.md) | Repositories | 2 | M · 2–3 h | T04 | todo |
+| [T07](T07-geocoding-client.md) | Geocoding client | 2 | S · 1 h | T03 | in progress (agent) |
+| [T08](T08-forecast-marine-clients.md) | Forecast and marine clients | 2 | M · 2–3 h | T03 | in progress (agent) |
+| [T09](T09-repositories.md) | Repositories | 2 | M · 2–3 h | T04 | in progress (agent) |
 | [T10](T10-forecast-service.md) | ForecastService: read-through refresh | 2 | M · 3–4 h | T07, T08, T09 | todo |
-| [T11](T11-scoring-foundation.md) | Scoring foundation and ranking | 3 | S · 1.5 h | T03 | todo |
+| [T11](T11-scoring-foundation.md) | Scoring foundation and ranking | 3 | S · 1.5 h | T03 | in progress (agent) |
 | [T12](T12-skiing-scorer.md) | Skiing scorer | 3 | S · 1 h | T11 | todo |
 | [T13](T13-surfing-scorer.md) | Surfing scorer | 3 | S · 1 h | T11 | todo |
 | [T14](T14-sightseeing-scorers.md) | Outdoor and indoor sightseeing scorers | 3 | S · 1.5 h | T11 | todo |

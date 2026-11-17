@@ -10,12 +10,12 @@ Day 1 · Size M (~2–3 h) · Depends on T03 · PRD §8
 
 ## Done when
 
-- [ ] `docker-compose.yml` runs Postgres only, with a named volume. Use the current stable major version until T06 finds out which one Light Cloud runs.
-- [ ] `src/storage/db.ts` creates a `pg` pool of 5 from `DATABASE_URL`.
-- [ ] `src/storage/migrate.ts` applies `migrations/*.sql` in name order, each in its own transaction, and records each file in `schema_migrations`. Running it twice changes nothing.
-- [ ] `migrations/001_init.sql` holds the schema from PRD §8, adjusted for the marine decision.
-- [ ] `npm start` runs the migrations, then the server.
-- [ ] Integration tests get a fresh schema per run (for example, `CREATE SCHEMA` with a random name plus `search_path`), dropped afterwards.
+- [x] `docker-compose.yml` runs Postgres only, with a named volume. Postgres 18 for now; T06 aligns it with Light Cloud.
+- [x] `src/storage/db.ts` creates a `pg` pool of 5 from `DATABASE_URL`.
+- [x] `src/storage/migrate.ts` applies `migrations/*.sql` in name order, each in its own transaction, and records each file in `schema_migrations`. Running it twice changes nothing.
+- [x] `migrations/001_init.sql` holds the schema from PRD §8, adjusted for the marine decision.
+- [x] `npm start` runs the migrations, then the server.
+- [x] Integration tests get a fresh schema per run (for example, `CREATE SCHEMA` with a random name plus `search_path`), dropped afterwards.
 
 ## Tests first
 
@@ -23,5 +23,8 @@ Day 1 · Size M (~2–3 h) · Depends on T03 · PRD §8
 - A broken migration rolls back and stops startup.
 
 ## Notes
+
+- Local Postgres listens on port 5433, so it doesn't clash with another Postgres on 5432.
+- Checked by hand: `npm start` applied `001_init.sql` to the local database and served `/health`.
 
 - Parameterised queries only, from the very first query (PRD §10).

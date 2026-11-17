@@ -1,74 +1,24 @@
+import { INDOOR_SIGHTSEEING, MAX_SCORE, OUTDOOR_SIGHTSEEING } from '../const/scoring.js';
 import type { DailyWeather } from '../domain.js';
-import { band, type Band } from './band.js';
+import { band } from './band.js';
 import { capScore, weightedScore } from './score.js';
 import type { Scorer } from './types.js';
 import { describeWeather, isThunderstorm, weatherQuality } from './weather-code.js';
 
-const MAX_SCORE = 100;
-
-// The weights, the ideal feels-like range and the thunderstorm cap are from PRD §9.
-const WEIGHTS = { feelsLike: 0.3, rain: 0.35, sun: 0.15, gusts: 0.1, weather: 0.1 };
-const THUNDERSTORM_MAX_SCORE = 20;
-// A likely soaking rules out a day on foot however warm and calm, which the weights miss (T15).
-const HEAVY_RAIN_MAX_SCORE = 30;
-
-const FEELS_LIKE_C: Band = {
-  // At freezing, a day on foot stops being pleasant for most visitors.
-  zeroBelow: 0,
-  idealMin: 16,
-  idealMax: 26,
-  // A feels-like 38 °C brings heat stress to anyone walking for hours.
-  zeroAbove: 38,
-};
-
-const RAIN_PROBABILITY_PCT: Band = {
-  zeroBelow: -Infinity,
-  idealMin: -Infinity,
-  // A one-in-five chance rarely changes anyone's plans.
-  idealMax: 20,
-  // At 90%, rain is all but certain.
-  zeroAbove: 90,
-};
-
-const RAIN_MM: Band = {
-  zeroBelow: -Infinity,
-  idealMin: -Infinity,
-  // Half a millimetre is a passing drizzle.
-  idealMax: 0.5,
-  // 10 mm in a day soaks through a jacket and umbrella.
-  zeroAbove: 10,
-};
-
-const GUSTS_KMH: Band = {
-  zeroBelow: -Infinity,
-  idealMin: -Infinity,
-  // Below 25 km/h (Beaufort 4), gusts barely register on foot.
-  idealMax: 25,
-  // 70 km/h is a gale (Beaufort 8): walking is seriously impeded.
-  zeroAbove: 70,
-};
-
-// "Likely" means more often than not.
-const RAIN_LIKELY_PCT = 50;
-
-// Ideal feels-like, rain and gusts alone score 75, so a lower score always has a reason to list.
-const GOOD_OUTDOOR_SCORE = 75;
-
-// A fallback, not a highlight: an outdoor day whose main conditions are right scores 65+ and wins.
-const INDOOR_MAX_SCORE = 65;
+const { weights, bands, caps, rainLikelyPct } = OUTDOOR_SIGHTSEEING;
 
 /** Outdoor sightseeing (PRD §9): mild, dry, sunny and calm is best. */
 export const scoreOutdoorSightseeing: Scorer = (day) => {
   const conditions = assess(day);
   let score = weightedScore([
-    [WEIGHTS.feelsLike, conditions.feelsLike],
-    [WEIGHTS.rain, conditions.rain],
-    [WEIGHTS.sun, conditions.sunShare],
-    [WEIGHTS.gusts, conditions.gusts],
-    [WEIGHTS.weather, weatherQuality(day.weatherCode)],
+    [weights.feelsLike, conditions.feelsLike],
+    [weights.rain, conditions.rain],
+    [weights.sun, conditions.sunShare],
+    [weights.gusts, conditions.gusts],
+    [weights.weather, weatherQuality(day.weatherCode)],
   ]);
-  if (conditions.thunderstorm) score = capScore(score, THUNDERSTORM_MAX_SCORE);
-  if (conditions.heavyRain) score = capScore(score, HEAVY_RAIN_MAX_SCORE);
+  if (conditions.thunderstorm) score = capScore(score, caps.thunderstorm.maxScore);
+  if (conditions.heavyRain) score = capScore(score, caps.heavyRain.maxScore);
   return {
     score,
     reasons: [
@@ -94,9 +44,9 @@ export const scoreOutdoorSightseeing: Scorer = (day) => {
  */
 export const scoreIndoorSightseeing: Scorer = (day) => {
   const outdoor = scoreOutdoorSightseeing(day).score;
-  const reasons = outdoor >= GOOD_OUTDOOR_SCORE ? [] : reasonsToStayIn(day);
+  const reasons = outdoor >= INDOOR_SIGHTSEEING.goodOutdoorScore ? [] : reasonsToStayIn(day);
   return {
-    score: capScore(MAX_SCORE - outdoor, INDOOR_MAX_SCORE),
+    score: capScore(MAX_SCORE - outdoor, INDOOR_SIGHTSEEING.maxScore),
     reasons: reasons.length > 0 ? reasons : ['Good weather outside: indoor sightseeing can wait'],
   };
 };
@@ -108,18 +58,18 @@ function assess(day: DailyWeather) {
   return {
     thunderstorm: isThunderstorm(day.weatherCode),
     heavyRain:
-      day.precipitationProbabilityPct >= RAIN_LIKELY_PCT &&
-      day.precipitationMm >= RAIN_MM.zeroAbove,
+      day.precipitationProbabilityPct >= rainLikelyPct &&
+      day.precipitationMm >= bands.rainMm.zeroAbove,
     polarNight,
-    feelsLike: band(day.apparentTempMaxC, FEELS_LIKE_C),
+    feelsLike: band(day.apparentTempMaxC, bands.feelsLikeC),
     // Mean, not min: the probability is the day's highest hourly chance, so a passing shower can
     // read 80%; the amount tempers it, and the other way round.
     rain:
-      (band(day.precipitationProbabilityPct, RAIN_PROBABILITY_PCT) +
-        band(day.precipitationMm, RAIN_MM)) /
+      (band(day.precipitationProbabilityPct, bands.rainProbabilityPct) +
+        band(day.precipitationMm, bands.rainMm)) /
       2,
     sunShare: polarNight ? 0 : day.sunshineSeconds / day.daylightSeconds,
-    gusts: band(day.windGustsMaxKmh, GUSTS_KMH),
+    gusts: band(day.windGustsMaxKmh, bands.gustsKmh),
   };
 }
 
@@ -146,7 +96,7 @@ function gusts(day: DailyWeather): string {
 function rainOutlook(day: DailyWeather): string {
   // Open-Meteo's precipitation includes snow, so a snowy day must not say only "rain".
   const kind = day.snowfallCm > 0 ? 'Rain or snow' : 'Rain';
-  return `${kind} ${day.precipitationProbabilityPct >= RAIN_LIKELY_PCT ? 'likely' : 'possible'}`;
+  return `${kind} ${day.precipitationProbabilityPct >= rainLikelyPct ? 'likely' : 'possible'}`;
 }
 
 /** E.g. "80%, 6.3 mm". */

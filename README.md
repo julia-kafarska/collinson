@@ -78,19 +78,26 @@ The brief is open on purpose. These are the calls I made where I'd normally ask 
 - **"Rank" means both:** the 4 activities are ranked against each other by weekly score, and each also has a score per day and a `bestDay`.
 - **Ambiguous names:** the top Open-Meteo match wins. An optional `countryCode` narrows it, and the resolved location is always echoed back.
 - **Surfing inland** scores 0 with the reason "No marine data for this location". It isn't left out.
-- **Indoor sightseeing** is the fallback: `100 − outdoor score`.
+- **Indoor sightseeing** is the fallback: `100 − outdoor score`, capped at 65, because a day indoors is never a highlight.
 - **Fresh snow** is the previous day's snowfall. Snow falling today means poor visibility, so a blizzard isn't the best ski day.
 - **"Next 7 days"** is today plus 6, in the place's timezone. Units are metric.
 - **Scale:** low traffic and one instance. No accounts, because the data is public and read-only.
 
 ## Known limitations
 
-- **Thresholds:** the scoring thresholds are heuristics. They were checked against a few real weeks (T15), not researched.
+- **Thresholds:** the scoring thresholds are heuristics, not researched values. They were checked against four real weeks (Olympic Valley, Malibu, Brussels, Málaga) and a survey of 51 live weeks (T15). Skiing beats indoor at Olympic Valley by only one point, and a week that is mostly storm at a resort still ranks indoor first.
 - **Ski towns** are scored at the town's coordinates and elevation, not at the slopes.
 - **Surfing** ignores wind direction: an offshore wind counts the same as an onshore one.
 - **One instance only:** the rate limit, the Open-Meteo call cap and the shared refresh live in memory, so the app runs as a single instance (`max_instances: 1`).
 - **Database TLS:** the connection to Light Cloud's Postgres is encrypted but doesn't verify the server certificate, which comes from a private Cloud SQL CA ([D11](docs/DECISIONS.md)).
 - **Missing timezone:** a geocoding match without a timezone would show up as `UPSTREAM_UNAVAILABLE`. I haven't seen it happen for a top match.
+
+## Cut, and why
+
+- **No `searchLocations` query:** the top match plus an optional `countryCode` covers the brief, and the resolved place is echoed back.
+- **Bruno doesn't test `UPSTREAM_UNAVAILABLE` or HTTP 429:** neither can be triggered safely against the live service. Both are covered by tests (`src/server.test.ts`, `src/http/protection.test.ts`).
+- **No background refresh:** we can't know which places will be asked for, so the data is refreshed when it is read.
+- **GraphiQL stays on in production:** this is a demo for reviewers, and the schema holds nothing secret. A real API would turn it off.
 
 ## What I'd do next
 

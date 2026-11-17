@@ -88,3 +88,20 @@ Decisions in the order they were made. Each entry gives the decision, the option
 - **Decision:** move every user-facing text, log message, URL and numeric limit into `src/const/`, one file per kind (T22).
 - **Options:** keep each constant next to the code that uses it, as PRD v0.4 §14 said.
 - **Why:** this was requested in review. Wording and limits can then be read and changed in one place, and the scoring thresholds T15 tunes sit together. Code stays where it is: SQL, zod field names and request parameter keys.
+
+## D16 · Indoor sightseeing is capped at 65 (2026-11-17, T15; amends D7)
+
+- **Decision:** `indoor = min(100 − outdoor, 65)`.
+- **Evidence:** a calibration week at Olympic Valley, California, with a deep base, a storm, then powder, ranked INDOOR 72 over SKIING 60. Indoor scored 96–98 on the storm days, because cold and snow make outdoor sightseeing poor. Of 51 live weeks surveyed, every resort with 25 cm of snow or more ranked indoor first, except one.
+- **Why 65:** a day indoors is a fallback, not a highlight. 65 is about the least an outdoor day scores when its main conditions are right. The cap only applies when outdoor is under 35, so it never changes which of the two sightseeing activities wins a day.
+- **Limit:** a week that is mostly storm still ranks indoor first (Val Thorens: 64 against 59). The fuller fix, indoor = 100 − the best outdoor activity, would tie the scorers together, so it is not done.
+
+## D17 · Heavy rain caps outdoor sightseeing at 30 (2026-11-17, T15)
+
+- **Decision:** when rain is 50% likely or more AND 10 mm or more is forecast, outdoor sightseeing scores at most 30.
+- **Why:** a likely soaking rules out a day on foot, however warm. Before, a warm, calm downpour scored 41, and 45 mm in Peniche scored 44. Both limits were already in the scorer.
+
+## D18 · Waves from 4 m cap surfing at 30 (2026-11-17, T15)
+
+- **Decision:** the wave-height band now reaches zero at 4 m (it was 5 m), and waves of 4 m or more cap surfing at 30.
+- **Why:** most breaks close out from about 4 m. Before, swell period and wind alone gave such a day 50–60: Biarritz's 5.4 m day at 12 s scored 60.

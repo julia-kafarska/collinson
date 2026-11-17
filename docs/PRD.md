@@ -1,12 +1,13 @@
 # PRD: Activity Weather Ranking Service
 
-Status: Draft v0.4 · 2026-11-17
+Status: Draft v0.5 · 2026-11-17
 Source brief: the recruiter's take-home brief. The file is kept out of git (docs/DECISIONS.md, D4); its requirements are summarised in sections 1 and 2.
 
 Change log:
 - v0.2 (2026-11-17): storage moved from SQLite to PostgreSQL, because the service will be deployed to Light Cloud, which provides managed Postgres. Added basic security (section 10) and the Light Cloud deployment (section 13).
 - v0.3 (2026-11-17): Open-Meteo spike results recorded (section 7). Daily `snow_depth_max` replaces the hourly aggregation. Marine data moved to its own table with its own fetch time (section 8). Fresh snow now counts the previous day's snowfall, and indoor sightseeing is `100 − outdoor` (section 9). Light Cloud platform facts added (section 13). See docs/DECISIONS.md, D4–D9.
 - v0.4 (2026-11-17): first deploy facts recorded (section 13). Light Cloud runs Postgres 15.19 and Node 24.22.3. The database connection needs libpq `sslmode=require` semantics. Requests reach the app through 2 trusted proxy hops. Local and CI moved to Postgres 15. See docs/DECISIONS.md, D11–D14.
+- v0.5 (2026-11-17): T15 calibration on real weeks added three caps (section 9): indoor sightseeing at most 65, heavy rain caps outdoor at 30, and waves from 4 m cap surfing at 30. See docs/DECISIONS.md, D16–D18. Constants moved to `src/const/` (D15).
 
 ## 1. Context
 
@@ -245,14 +246,14 @@ The thresholds below are starting heuristics, not researched truths. They are tu
 | Activity | Factors (weight) | Hard caps |
 |----------|------------------|-----------|
 | Skiing | snow depth, 50 cm+ ideal (0.4) · fresh snow (the previous day's snowfall), 10 cm+ ideal (0.25) · max temp −10..0 °C (0.15) · gusts < 30 km/h (0.1) · weather/visibility (0.1) | snow depth < 10 cm → max 10 · gusts > 60 km/h → max 30 |
-| Surfing | wave height 1–2.5 m (0.4) · swell period 10 s+ (0.3) · wind < 15 km/h (0.2) · weather (0.1) | no marine data → 0 · thunderstorm → max 10 · waves < 0.3 m → max 10 |
-| Outdoor sightseeing | apparent temp 16–26 °C (0.3) · rain probability and amount (0.35) · sunshine share of daylight (0.15) · gusts (0.1) · weather (0.1) | thunderstorm → max 20 |
-| Indoor sightseeing | `100 − outdoorScore` | — |
+| Surfing | wave height 1–2.5 m (0.4) · swell period 10 s+ (0.3) · wind < 15 km/h (0.2) · weather (0.1) | no marine data → 0 · thunderstorm → max 10 · waves < 0.3 m → max 10 · waves ≥ 4 m → max 30 (D18) |
+| Outdoor sightseeing | apparent temp 16–26 °C (0.3) · rain probability and amount (0.35) · sunshine share of daylight (0.15) · gusts (0.1) · weather (0.1) | thunderstorm → max 20 · rain ≥ 50% likely and ≥ 10 mm → max 30 (D17) |
+| Indoor sightseeing | `100 − outdoorScore` | max 65 (D16) |
 
-Why these choices (docs/DECISIONS.md, D6 and D7):
+Why these choices (docs/DECISIONS.md, D6, D7 and D16–D18):
 
 - **Fresh snow is the previous day's snowfall.** Snow falling during the day means poor visibility. Counting it would make a blizzard the best ski day, while skiers want the clear day after it.
-- **Indoor is `100 − outdoor`.** An earlier draft used `50 + 0.5 × (100 − outdoor)`. Its floor of 50 let indoor beat skiing on an ordinary overcast day in a ski resort. T15 checks the result against real weeks.
+- **Indoor is `100 − outdoor`.** An earlier draft used `50 + 0.5 × (100 − outdoor)`. Its floor of 50 let indoor beat skiing on an ordinary overcast day in a ski resort. Calibration (T15) then showed that `100 − outdoor` still beat skiing on snowy days, because cold and snow make outdoor poor. Indoor is therefore capped at 65: a day indoors is a fallback, not a highlight.
 - **Polar night:** when daylight is 0, the sunny share counts as 0 instead of dividing by zero.
 
 Weekly score is the mean of the 7 daily scores. Activities are sorted by weekly score; ties are broken by the best day's score.

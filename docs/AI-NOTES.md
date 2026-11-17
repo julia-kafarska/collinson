@@ -38,3 +38,13 @@ The brief asks for AI to be used, and for the way of working to be visible. This
   - `npx prettier` picked up a global Prettier 2 through the shell wrapper and broke the lint. Agents switched to `./node_modules/.bin/prettier`.
   - One agent's worktree started from an older commit, so it had to fast-forward to `main` first.
   - The worktrees sit inside the repo folder, so ESLint scanned them until `.claude/` was ignored.
+
+## Later lessons (2026-11-17)
+
+- **Calibration on real weeks found what unit tests couldn't.** The T15 agent surveyed 51 live weeks and found that `indoor = 100 − outdoor` beat skiing at every snowy resort. Every scorer passed its own tests, so only the cross-activity check showed it (D16).
+- **Tests caught library surprises early:**
+  - Fastify 5.12 ignores a numeric `trustProxy`;
+  - GraphQL Yoga masks an error whose cause isn't a GraphQLError;
+  - in tests, vitest and Node loaded different builds of `graphql`.
+- **My own mistake:** a `git revert` failed silently, and the `--amend` after it reworded the logging commit as "revert", so the history no longer matched the code. I rebuilt only the unpushed commits on top of a real revert, confirmed the final code was byte-for-byte the same, and pushed without forcing. Lesson: check each git step's result instead of chaining quiet commands.
+- **CI was blocked by account billing, not by the code.** Every run failed in 4 s without starting. Making the repo public, which the brief requires anyway, made it pass on the first run.

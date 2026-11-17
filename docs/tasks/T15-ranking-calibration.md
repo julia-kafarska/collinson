@@ -9,7 +9,7 @@ Day 3 · Size S (~2 h) · Depends on T08, T12, T13, T14 · PRD §9
 - [x] Real weeks recorded as fixtures: a ski resort with deep snow (Olympic Valley), a surf spot (Malibu), a rainy city (Brussels), and a mild, sunny city (Málaga). Why not Zermatt, Biarritz and London: see Notes.
 - [x] One test per fixture checks the expected winner: SKIING, SURFING, INDOOR_SIGHTSEEING, OUTDOOR_SIGHTSEEING.
 - [x] One test over all fixtures checks that every score is an integer from 0 to 100 with at least one reason.
-- [ ] Every threshold change is recorded in `docs/DECISIONS.md` with its reason. The three changes are listed below, for the lead to record.
+- [x] Every threshold change is recorded in `docs/DECISIONS.md` with its reason: D16 (indoor cap 65), D17 (heavy-rain cap), D18 (big-wave cap).
 
 ## Notes
 

@@ -6,19 +6,19 @@ Day 5 · Size S (~2 h) · Depends on T15–T19 · PRD §3, §17
 
 ## Done when
 
-- [ ] The README covers:
-  - [ ] what the service is;
-  - [ ] the live URL;
-  - [ ] how to run it locally (`docker compose up -d`, `npm ci`, `npm run dev`);
-  - [ ] an example query and the error codes;
-  - [ ] the assumptions (PRD §3);
-  - [ ] known limitations;
-  - [ ] what I'd do next.
-- [ ] Limitations are stated plainly:
-  - [ ] valley elevation for ski towns;
-  - [ ] heuristic thresholds;
-  - [ ] in-memory limits for one instance;
-  - [ ] no wind direction for surfing.
-- [ ] `docs/DECISIONS.md` is tidied, not rewritten.
-- [ ] `docs/AI-NOTES.md` says where AI helped, and where it was wrong and was overridden.
-- [ ] Anything cut or unfinished gets one line on why. The brief asks for this.
+- [x] The README covers:
+  - [x] what the service is;
+  - [x] the live URL;
+  - [x] how to run it locally (`docker compose up -d`, `npm ci`, `npm run dev`);
+  - [x] an example query and the error codes;
+  - [x] the assumptions (PRD §3);
+  - [x] known limitations;
+  - [x] what I'd do next.
+- [x] Limitations are stated plainly:
+  - [x] valley elevation for ski towns;
+  - [x] heuristic thresholds;
+  - [x] in-memory limits for one instance;
+  - [x] no wind direction for surfing.
+- [x] `docs/DECISIONS.md` is tidied, not rewritten.
+- [x] `docs/AI-NOTES.md` says where AI helped, and where it was wrong and was overridden.
+- [x] Anything cut or unfinished gets one line on why. The brief asks for this.

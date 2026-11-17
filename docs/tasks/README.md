@@ -4,13 +4,16 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 
 ## Progress
 
-**72% done** · 100 of 138 checklist items · 17 of 21 tasks · updated 2026-11-17
+**94% done** · 137 of 145 checklist items · 20 of 22 tasks · updated 2026-11-17
 
-- **Live, the full API:** https://main-collinson-prod-team.light-cloud.io/graphql. It runs with the rate limit, the GraphQL query limits and the Open-Meteo call cap, checked against the live service.
-- **Done:** T01–T04, T06–T14, T16–T18. 169 tests pass on Postgres 15.
-- **Now, in parallel:** T15 ranking calibration on real weeks (rainy London currently ranks outdoor first) and T19 Bruno collection. The README (T20) is drafted.
-- **Blocked:** T05, because GitHub Actions won't start jobs until the account's billing issue is fixed. `npm run check` passes locally.
-- **Left after that:** finish T20, then T21. T21 makes the repo public, and only when you say so.
+- **Public repo:** https://github.com/julia-kafarska/collinson. CI is green (typecheck, lint, 177 tests on Postgres 15, `npm audit`).
+- **Live:** https://main-collinson-prod-team.light-cloud.io/graphql. The Bruno collection passes against it (7 requests, 23/23 assertions).
+- **Done:** T01–T20. T15 calibrated the scoring on four real weeks and a survey of 51, adding three caps (D16–D18).
+- **Now:** T22 part B, an agent moving the scoring weights, bands, caps and reason texts into `src/const/`.
+- **T21, left for you:**
+  - tell the recruiter (repo plus live URL);
+  - optionally keep one instance warm (`min_instances: 1`) for the review window;
+  - run the Bruno collection less than 3 h before the interview, so the database is warm.
 
 ## How to work a task
 
@@ -28,7 +31,7 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 | [T02](T02-open-meteo-spike.md) | Open-Meteo spike | 1 | S | — | done |
 | [T03](T03-project-skeleton.md) | Project skeleton | 1 | M · 2–3 h | T01 | done |
 | [T04](T04-postgres-and-migrations.md) | Local Postgres and migrations | 1 | M · 2–3 h | T03 | done |
-| [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | blocked: GitHub Actions billing |
+| [T05](T05-ci.md) | CI pipeline | 1 | S · 45 min | T04 | done |
 | [T06](T06-light-cloud-skeleton.md) | Light Cloud walking skeleton | 1 | S · 1.5 h | T04, T05 | done |
 | [T07](T07-geocoding-client.md) | Geocoding client | 2 | S · 1 h | T03 | done |
 | [T08](T08-forecast-marine-clients.md) | Forecast and marine clients | 2 | M · 2–3 h | T03 | done |
@@ -38,14 +41,14 @@ The work in [`docs/PRD.md`](../PRD.md) (v0.3), split into tasks of about 30 minu
 | [T12](T12-skiing-scorer.md) | Skiing scorer | 3 | S · 1 h | T11 | done |
 | [T13](T13-surfing-scorer.md) | Surfing scorer | 3 | S · 1 h | T11 | done |
 | [T14](T14-sightseeing-scorers.md) | Outdoor and indoor sightseeing scorers | 3 | S · 1.5 h | T11 | done |
-| [T15](T15-ranking-calibration.md) | Ranking calibration with real weeks | 3 | S · 2 h | T08, T12, T13, T14 | in progress (agent) |
+| [T15](T15-ranking-calibration.md) | Ranking calibration with real weeks | 3 | S · 2 h | T08, T12, T13, T14 | done |
 | [T16](T16-graphql-api.md) | GraphQL schema and resolver | 4 | M · 3 h | T10, T11–T14 | done |
 | [T17](T17-http-protection.md) | HTTP protection | 4 | S · 1.5 h | T03, T06 | done |
 | [T18](T18-query-limits-upstream-cap.md) | Query limits and upstream cap | 4 | S · 2 h | T07, T08, T16 | done |
-| [T19](T19-bruno-and-curl.md) | Bruno collection and curl examples | 4 | S · 1 h | T16 | in progress (agent) |
-| [T20](T20-readme-and-docs.md) | README and process docs | 5 | S · 2 h | T15–T19 | in progress: README drafted |
-| [T21](T21-release.md) | Release | 5 | S · 1 h | T20 | todo |
-| [T22](T22-constants-folder.md) | Hardcoded constants in `src/const` | 5 | M · 2 h | T15 (part B) | part A merged; part B waits for T15 |
+| [T19](T19-bruno-and-curl.md) | Bruno collection and curl examples | 4 | S · 1 h | T16 | done |
+| [T20](T20-readme-and-docs.md) | README and process docs | 5 | S · 2 h | T15–T19 | done |
+| [T21](T21-release.md) | Release | 5 | S · 1 h | T20 | mostly done: telling the recruiter and the warm-up are yours |
+| [T22](T22-constants-folder.md) | Hardcoded constants in `src/const` | 5 | M · 2 h | T15 (part B) | part A merged; part B in progress (agent) |
 
 Sizes: S is up to 2 hours, M is 2–4 hours.
 

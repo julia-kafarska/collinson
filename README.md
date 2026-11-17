@@ -4,6 +4,11 @@ A GraphQL service that takes a city or town and ranks how good the next 7 days w
 
 **Live:** https://main-collinson-prod-team.light-cloud.io/graphql. Open it in a browser for GraphiQL, with an example query ready to run.
 
+## Screenshots
+
+![Screenshot 2026-11-17 at 12.18.20.png](docs/Screenshot%202026-11-17%20at%2012.18.20.png)
+![Screenshot 2026-11-17 at 11.31.02.png](docs/Screenshot%202026-11-17%20at%2011.31.02.png)
+
 ## How it works
 
 ```

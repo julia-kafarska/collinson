@@ -39,9 +39,9 @@ export const scoreOutdoorSightseeing: Scorer = (day) => {
 };
 
 /**
- * Indoor sightseeing is the fallback when outdoors is poor: 100 − outdoor (DECISIONS D7), at most
- * 65. The cap never changes which sightseeing wins a day, since it only bites when outdoors is
- * under 35, but a storm day no longer outweighs the good ski or surf days around it (T15).
+ * Indoor sightseeing is the fallback when outdoors is poor: 100 − outdoor (DECISIONS D7), capped
+ * at INDOOR_SIGHTSEEING.maxScore (D16). The cap only bites when outdoors is poor too, so it never
+ * changes which sightseeing wins a day, but a storm day no longer outweighs good ski or surf days.
  */
 export const scoreIndoorSightseeing: Scorer = (day) => {
   const outdoor = scoreOutdoorSightseeing(day).score;

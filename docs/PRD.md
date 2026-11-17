@@ -315,6 +315,8 @@ Folder layout. Each folder is one concern and each file one idea:
 
 ```
 src/
+  const/             every hardcoded text and limit, one file per kind (D15): errors, limits,
+                     open-meteo, server, log-messages, scoring, reasons, weather-codes
   server.ts          composition root: Fastify (rate limit, body limit), Yoga (GraphQL Armor), dependencies
   config.ts          environment variables parsed with zod, with defaults
   graphql/           schema.graphql, resolvers.ts, error mapping
@@ -354,7 +356,7 @@ docker-compose.yml   local PostgreSQL
 - **Pure core, thin edges.** Scoring and ranking are pure functions with no I/O. HTTP, Postgres and the clock live at the edges, so most of the logic can be tested without mocks.
 - **Explicit dependencies.** `fetch`, the database and `now()` are passed in through factory parameters. No hidden globals, no DI framework. This is what makes tests deterministic.
 - **Types model the domain.** `Activity` is a closed union. Missing marine data is `null`, never `0` or `NaN`. TypeScript runs with `strict` and `noUncheckedIndexedAccess`.
-- **Named constants instead of magic numbers.** Scoring thresholds are named constants that sit next to the scorer using them.
+- **Named constants instead of magic numbers.** Every hardcoded text and limit lives in `src/const/`, one file per kind (D15): error messages, limits, Open-Meteo endpoints, server settings, log messages, and the scoring weights, bands, caps and reason texts. Logic stays where it is; only values and wording move.
 - **Errors in one place.** Typed domain errors (`LocationNotFoundError`, `UpstreamUnavailableError`) are mapped to GraphQL error codes once, in the GraphQL layer.
 - **No premature abstraction.** No base classes, no generic repository, no plugin system beyond a list of scorers. Code is added when a real need appears.
 

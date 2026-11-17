@@ -36,8 +36,8 @@ Part A (everything outside `src/scoring/`):
 
 Part B (`src/scoring/`, after T15 merges):
 
-- [ ] `scoring.ts`, `reasons.ts` and `weather-codes.ts` exist, and the scorers import from them.
-- [ ] No reason text or threshold is left inline in `src/scoring/`.
+- [x] `scoring.ts`, `reasons.ts` and `weather-codes.ts` exist, and the scorers import from them.
+- [x] No reason text or threshold is left inline in `src/scoring/`.
 
 Both:
 

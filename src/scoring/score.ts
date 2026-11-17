@@ -1,4 +1,4 @@
-const MAX_SCORE = 100;
+import { MAX_SCORE } from '../const/scoring.js';
 
 /**
  * The weighted mean of the factor values as an integer score from 0 to 100. Each value is

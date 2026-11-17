@@ -7,3 +7,6 @@ coverage/
 
 # The recruiter's brief stays private (docs/DECISIONS.md, D4)
 docs/lead-snr-engineer-test-062026.docx
+
+# Claude Code agent worktrees
+.claude/

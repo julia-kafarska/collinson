@@ -3,7 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { BODY_LIMIT_BYTES, registerProtection, trustProxy } from './protection.js';
 
 const TEST_MAX = 3;
+// Light Cloud's chain, measured in DECISIONS D14: Cloudflare appends the client's address, Light
+// Cloud's edge appends Cloudflare's, and the socket comes from Cloud Run's proxy.
 const PROXY_IP = '10.0.0.1';
+const CLOUDFLARE_IP = '172.64.200.5';
 const CLIENT_IP = '5.6.7.8';
 const OTHER_CLIENT_IP = '6.7.8.9';
 const SPOOFED_IP = '1.1.1.1';
@@ -17,7 +20,10 @@ async function buildTestApp(logger: FastifyServerOptions['logger'] = false) {
   return app;
 }
 
-// As in production, each request comes from the proxy, which appended the address it saw.
+/** X-Forwarded-For as it reaches the app: anything the client sent, then the client, then Cloudflare. */
+const forwarded = (client: string, ...clientMade: string[]) =>
+  [...clientMade, client, CLOUDFLARE_IP].join(', ');
+
 function postEcho(app: FastifyInstance, forwardedFor: string) {
   return app.inject({
     method: 'POST',
@@ -49,18 +55,19 @@ describe('HTTP protection', () => {
 
   it('answers the request over the limit with 429 and Retry-After', async () => {
     const app = await buildTestApp();
-    expect(await postAll(app, [CLIENT_IP, CLIENT_IP, CLIENT_IP])).toEqual([200, 200, 200]);
-    const res = await postEcho(app, CLIENT_IP);
+    const client = forwarded(CLIENT_IP);
+    expect(await postAll(app, [client, client, client])).toEqual([200, 200, 200]);
+    const res = await postEcho(app, client);
     expect(res.statusCode).toBe(429);
     expect(res.headers['retry-after']).toBe('60');
     await app.close();
   });
 
-  it('keys clients by the last X-Forwarded-For entry, so two clients have separate limits', async () => {
+  it('keys clients by the address Cloudflare saw, not by Cloudflare itself', async () => {
     const app = await buildTestApp();
-    // Both share the first entry, so only the last one tells them apart.
-    const client = `9.9.9.9, ${CLIENT_IP}`;
-    const otherClient = `9.9.9.9, ${OTHER_CLIENT_IP}`;
+    // Both arrive through the same Cloudflare address, so only the client entry tells them apart.
+    const client = forwarded(CLIENT_IP);
+    const otherClient = forwarded(OTHER_CLIENT_IP);
     expect(await postAll(app, [client, client, client, client, otherClient])).toEqual([
       200, 200, 200, 429, 200,
     ]);
@@ -69,7 +76,9 @@ describe('HTTP protection', () => {
 
   it('keeps the limit when a client changes its own part of X-Forwarded-For', async () => {
     const app = await buildTestApp();
-    const spoofed = ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4'].map((ip) => `${ip}, ${CLIENT_IP}`);
+    const spoofed = ['1.1.1.1', '2.2.2.2', '3.3.3.3', '4.4.4.4'].map((ip) =>
+      forwarded(CLIENT_IP, ip),
+    );
     expect(await postAll(app, spoofed)).toEqual([200, 200, 200, 429]);
     await app.close();
   });
@@ -102,7 +111,7 @@ describe('HTTP protection', () => {
       level: 'warn',
       stream: { write: (line: string) => lines.push(line) },
     });
-    const forwardedFor = `${SPOOFED_IP}, ${CLIENT_IP}`;
+    const forwardedFor = forwarded(CLIENT_IP, SPOOFED_IP);
     await postAll(app, [forwardedFor, forwardedFor, forwardedFor, forwardedFor]);
     expect(lines.map((line) => JSON.parse(line))).toEqual([
       expect.objectContaining({ level: PINO_WARN, msg: 'rate limit exceeded', ip: CLIENT_IP }),

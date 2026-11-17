@@ -82,6 +82,15 @@ describe('scoreSurfing', () => {
     expect(reasons[0]).toBe('Thunderstorm: stay out of the water');
   });
 
+  it('caps waves of 4 m or more at 30, even at 12 s in light wind, and says why', () => {
+    for (const waveHeightMaxM of [4, 4.2, 5.4]) {
+      const { score, reasons } = scoreSurfing(surfDay({ waveHeightMaxM }));
+      expect(score).toBeLessThanOrEqual(30);
+      expect(reasons[0]).toBe(`Waves ${waveHeightMaxM} m: too big for most surfers`);
+    }
+    expect(scoreSurfing(surfDay({ waveHeightMaxM: 3.9 })).score).toBeGreaterThan(30);
+  });
+
   it('scores 5.5 m waves lower than 2 m waves, all else equal', () => {
     const huge = scoreSurfing(surfDay({ waveHeightMaxM: 5.5 }));
     expect(huge.score).toBeLessThan(scoreSurfing(surfDay({ waveHeightMaxM: 2 })).score);

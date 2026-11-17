@@ -26,7 +26,7 @@ function day(overrides: Partial<DailyWeather> = {}): DailyWeather {
 
 const MILD_SUNNY = day();
 
-// Cold and gusty, like London in November: a warm, calm downpour still scores about 40.
+// Cold and gusty, like London in November.
 const HEAVY_RAIN = day({
   apparentTempMaxC: 8,
   precipitationProbabilityPct: 95,
@@ -35,6 +35,14 @@ const HEAVY_RAIN = day({
   windGustsMaxKmh: 45,
   sunshineSeconds: 0,
   daylightSeconds: 30_000,
+});
+
+// Warm and calm, so only the heavy-rain cap keeps it at 30 or less: the weights alone give 41.
+const WARM_DOWNPOUR = day({
+  precipitationProbabilityPct: 95,
+  precipitationMm: 18,
+  weatherCode: 65,
+  sunshineSeconds: 0,
 });
 
 // Warm and fairly dry, so only the cap keeps it at 20 or less.
@@ -68,6 +76,7 @@ const SNOWY = day({
 const DAYS = [
   MILD_SUNNY,
   HEAVY_RAIN,
+  WARM_DOWNPOUR,
   THUNDERSTORM,
   POLAR_NIGHT,
   SNOWY,
@@ -101,6 +110,16 @@ describe('scoreOutdoorSightseeing', () => {
     expect(reasons).toContain('Rain likely: 95%, 18 mm');
   });
 
+  it('caps a warm, calm downpour at 30, when rain is likely and 10 mm or more', () => {
+    expect(scoreOutdoorSightseeing(WARM_DOWNPOUR).score).toBe(30);
+    expect(scoreOutdoorSightseeing({ ...WARM_DOWNPOUR, precipitationMm: 9 }).score).toBeGreaterThan(
+      30,
+    );
+    expect(
+      scoreOutdoorSightseeing({ ...WARM_DOWNPOUR, precipitationProbabilityPct: 45 }).score,
+    ).toBeGreaterThan(30);
+  });
+
   it('scores a thunderstorm 20 or less, even on a warm day', () => {
     const { score, reasons } = scoreOutdoorSightseeing(THUNDERSTORM);
     expect(score).toBeLessThanOrEqual(20);
@@ -113,11 +132,19 @@ describe('scoreOutdoorSightseeing', () => {
 });
 
 describe('scoreIndoorSightseeing', () => {
-  it('is 100 − outdoor, so it moves the opposite way', () => {
+  it('is 100 − outdoor, at most 65, so it moves the opposite way', () => {
     for (const weather of DAYS) {
       expect(scoreIndoorSightseeing(weather).score).toBe(
-        100 - scoreOutdoorSightseeing(weather).score,
+        Math.min(100 - scoreOutdoorSightseeing(weather).score, 65),
       );
+    }
+  });
+
+  it('caps the worst day at 65, yet still beats outdoors whenever outdoors scores under 50', () => {
+    expect(scoreIndoorSightseeing(THUNDERSTORM).score).toBe(65);
+    for (const weather of DAYS) {
+      const outdoor = scoreOutdoorSightseeing(weather).score;
+      if (outdoor < 50) expect(scoreIndoorSightseeing(weather).score).toBeGreaterThan(outdoor);
     }
   });
 

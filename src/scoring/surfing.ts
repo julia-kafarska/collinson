@@ -12,14 +12,19 @@ const FLAT_BELOW_M = 0.3;
 const MAX_SCORE_WHEN_FLAT = 10;
 const MAX_SCORE_IN_THUNDERSTORM = 10;
 
-// The ideal ranges are PRD §9's. The zero limits are starting heuristics for T15 to tune.
+// From 4 m most breaks close out, yet period and wind alone still gave such a day 50–60 (T15).
+const TOO_BIG_FROM_M = 4;
+// Ruled out for most surfers, though experts may still find a sheltered break.
+const MAX_SCORE_WHEN_TOO_BIG = 30;
+
+// The ideal ranges are PRD §9's. The zero limits are ours, checked against real weeks in T15.
 const WAVE_HEIGHT_BAND_M: Band = {
   // Under 0.3 m there is nothing to ride, which is also where the flat cap starts.
   zeroBelow: FLAT_BELOW_M,
   idealMin: 1,
   idealMax: 2.5,
-  // Over 5 m is too big and dangerous for most surfers.
-  zeroAbove: 5,
+  // Too big and dangerous for most surfers, which is also where the too-big cap starts.
+  zeroAbove: TOO_BIG_FROM_M,
 };
 const SWELL_PERIOD_BAND_S: Band = {
   // At 5 s or less the waves are local wind chop, not swell.
@@ -57,6 +62,7 @@ export const scoreSurfing: Scorer = ({ marine, windSpeedMaxKmh, weatherCode }) =
   ]);
   if (thunderstorm) score = capScore(score, MAX_SCORE_IN_THUNDERSTORM);
   if (waveHeightM < FLAT_BELOW_M) score = capScore(score, MAX_SCORE_WHEN_FLAT);
+  if (waveHeightM >= TOO_BIG_FROM_M) score = capScore(score, MAX_SCORE_WHEN_TOO_BIG);
 
   const sea = [describeWaves(waveHeightM), describePeriod(periodS), describeWind(windSpeedMaxKmh)];
   // A storm rules the day out, so it leads; other weather weighs least, so it comes last.
